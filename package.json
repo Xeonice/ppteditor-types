@@ -1,5 +1,5 @@
 {
-  "name": "@ppteditor/types",
+  "name": "@douglasdong/ppteditor-types",
   "version": "1.0.0",
   "description": "TypeScript type definitions for PPT Editor elements",
   "type": "module",
