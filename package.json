@@ -1,0 +1,45 @@
+{
+  "name": "@ppteditor/types",
+  "version": "1.0.0",
+  "description": "TypeScript type definitions for PPT Editor elements",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "test": "tsc --noEmit tests/*.ts",
+    "test:types": "tsc --noEmit tests/types.test.ts",
+    "test:compatibility": "tsc --noEmit tests/compatibility.test.ts",
+    "test:example": "tsc --noEmit example.ts",
+    "test:all": "npm run test && npm run test:example",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "ppt",
+    "editor",
+    "typescript",
+    "types",
+    "presentation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/[your-username]/ppteditor-types.git"
+  }
+}

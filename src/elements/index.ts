@@ -1,0 +1,22 @@
+export * from './base.js'
+export * from './text.js'
+export * from './image.js'
+export * from './chart.js'
+export * from './shape.js'
+export * from './line.js'
+export * from './table.js'
+export * from './latex.js'
+export * from './video.js'
+export * from './audio.js'
+
+import { PPTTextElement } from './text.js'
+import { PPTImageElement } from './image.js'
+import { PPTChartElement } from './chart.js'
+import { PPTShapeElement } from './shape.js'
+import { PPTLineElement } from './line.js'
+import { PPTTableElement } from './table.js'
+import { PPTLatexElement } from './latex.js'
+import { PPTVideoElement } from './video.js'
+import { PPTAudioElement } from './audio.js'
+
+export type PPTElement = PPTTextElement | PPTImageElement | PPTChartElement | PPTShapeElement | PPTLineElement | PPTTableElement | PPTLatexElement | PPTVideoElement | PPTAudioElement
