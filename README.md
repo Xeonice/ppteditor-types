@@ -1,6 +1,9 @@
-# @ppteditor/types
+# @douglasdong/ppteditor-types
 
 TypeScript type definitions for PPT Editor elements
+
+[![npm version](https://badge.fury.io/js/%40douglasdong%2Fppteditor-types.svg)](https://www.npmjs.com/package/@douglasdong/ppteditor-types)
+[![GitHub](https://img.shields.io/github/license/Xeonice/ppteditor-types)](https://github.com/Xeonice/ppteditor-types/blob/main/LICENSE)
 
 ## 描述
 
@@ -15,17 +18,17 @@ TypeScript type definitions for PPT Editor elements
 ## 安装
 
 ```bash
-npm install @ppteditor/types
+npm install @douglasdong/ppteditor-types
 ```
 
 ## 使用
 
 ```typescript
-import { PPTElement, Slide, ElementTypes } from '@ppteditor/types';
+import { PPTElement, Slide, ElementTypes } from '@douglasdong/ppteditor-types';
 
 // 或者按需导入
-import { PPTTextElement } from '@ppteditor/types/elements';
-import { SlideTheme } from '@ppteditor/types/slide';
+import { PPTTextElement } from '@douglasdong/ppteditor-types/elements';
+import { SlideTheme } from '@douglasdong/ppteditor-types/slide';
 ```
 
 ## 类型结构
