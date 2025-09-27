@@ -33,13 +33,17 @@
     "types",
     "presentation"
   ],
-  "author": "",
+  "author": "Xeonice",
   "license": "MIT",
   "devDependencies": {
     "typescript": "^5.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/[your-username]/ppteditor-types.git"
-  }
+    "url": "git+https://github.com/Xeonice/ppteditor-types.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Xeonice/ppteditor-types/issues"
+  },
+  "homepage": "https://github.com/Xeonice/ppteditor-types#readme"
 }
