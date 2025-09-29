@@ -1,6 +1,6 @@
 {
   "name": "@douglasdong/ppteditor-types",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "PPTEditor V2 标准化类型定义库（支持V1兼容）",
   "type": "module",
   "main": "dist/index.js",
