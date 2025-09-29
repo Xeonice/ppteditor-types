@@ -23,7 +23,11 @@ export type {
   V1ColorConfig,
   V1ShapeGradient,
   V1PPTTextElement,
-  V1PPTTextElementApi
+  V1PPTTextElementApi,
+  // 新增的样式类型（基于适配文档优化）
+  V1PPTElementShadow,
+  V1PPTElementOutline,
+  ThemeColorType
 } from './types/v1-compat-types.js';
 
 // ===== 版本适配器导出 =====

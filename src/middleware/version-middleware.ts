@@ -195,9 +195,37 @@ export class VersionMiddleware {
       this.logger('warn', '兼容性检查发现问题', compatibility);
     }
 
+    // 预处理：验证元素并过滤掉无效元素
+    const validElements: (V1CompatiblePPTElement | PPTElement)[] = [];
+    for (const element of elements) {
+      try {
+        // 基本验证
+        if (!element || typeof element !== 'object') {
+          throw new Error('元素为空或不是对象');
+        }
+        if (!element.id || !element.type) {
+          throw new Error('元素缺少必要的id或type属性');
+        }
+        if (typeof element.left !== 'number' ||
+            typeof element.top !== 'number') {
+          throw new Error('元素缺少必要的位置属性');
+        }
+        // 线条元素不需要width/height属性
+        if (element.type !== 'line' &&
+            (typeof element.width !== 'number' || typeof element.height !== 'number')) {
+          throw new Error('元素缺少必要的尺寸属性');
+        }
+        validElements.push(element);
+      } catch (validationError) {
+        const errorMessage = `元素验证失败 (id: ${element?.id || 'unknown'}): ${validationError instanceof Error ? validationError.message : String(validationError)}`;
+        errors.push(errorMessage);
+        this.logger('error', errorMessage, { element });
+      }
+    }
+
     // 批量转换
     try {
-      const conversionResult = VersionConversionUtils.normalizeToVersion(elements, targetVersion);
+      const conversionResult = VersionConversionUtils.normalizeToVersion(validElements, targetVersion);
       processedElements.push(...conversionResult.converted);
 
       if (conversionResult.stats.skipped > 0) {
@@ -209,7 +237,7 @@ export class VersionMiddleware {
     } catch (error) {
       const errorMessage = `批量处理失败: ${error instanceof Error ? error.message : String(error)}`;
       errors.push(errorMessage);
-      this.logger('error', errorMessage, { elements: elements.length, context });
+      this.logger('error', errorMessage, { elements: validElements.length, context });
 
       if (this.config.errorHandling === 'throw') {
         throw error;

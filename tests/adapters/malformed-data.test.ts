@@ -132,7 +132,9 @@ describe('Malformed V1 Data Handling', () => {
         width: 100,
         height: 100,
         rotate: 0,
+        viewBox: [0, 0],
         path: { d: 'M0,0 L100,100' } as any, // Non-string path
+        fixedRatio: false,
         themeFill: { color: '#ff0000', themeColor: '#ff0000' }
       };
 
@@ -334,7 +336,8 @@ describe('Malformed V1 Data Handling', () => {
         rotate: 0,
         content: 'Hello World',
         defaultFontName: 'Arial',
-        defaultColor: { color: '#000000', themeColor: '#000000' }
+        defaultColor: { color: '#000000', themeColor: '#000000' },
+        fit: 'none'
       };
 
       const result1 = V1ToV2Adapter.convertTextElement(element);

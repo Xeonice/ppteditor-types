@@ -12,7 +12,7 @@ import {
 describe('UnifiedPPTElement', () => {
   const v1Element = {
     id: 'test-1',
-    type: 'text',
+    type: 'text' as const,
     left: 100,
     top: 100,
     width: 200,
@@ -21,19 +21,22 @@ describe('UnifiedPPTElement', () => {
     content: 'Hello',
     defaultFontName: 'Arial',
     defaultColor: { color: '#000000', themeColor: '#000000' },
+    fit: 'none' as const,
     tag: 'v1-tag'
   };
 
   const v2Element = {
     id: 'test-2',
-    type: 'text',
+    type: 'text' as const,
     left: 200,
     top: 200,
     width: 300,
     height: 60,
     rotate: 45,
     content: 'World',
-    defaultColor: '#ff0000'
+    defaultFontName: 'Arial',
+    defaultColor: '#ff0000',
+    fit: 'none' as const
   };
 
   describe('constructor', () => {
@@ -115,7 +118,9 @@ describe('UnifiedPPTElement', () => {
     });
 
     it('should set rotation correctly', () => {
-      const unified = new UnifiedPPTElement(v1Element);
+      // Create a copy to avoid affecting other tests
+      const elementCopy = JSON.parse(JSON.stringify(v1Element));
+      const unified = new UnifiedPPTElement(elementCopy);
       unified.setRotation(90);
       expect(unified.getRotation()).toBe(90);
     });
@@ -123,7 +128,9 @@ describe('UnifiedPPTElement', () => {
 
   describe('clone', () => {
     it('should create independent copy', () => {
-      const unified = new UnifiedPPTElement(v1Element);
+      // Create a copy to ensure fresh state
+      const elementCopy = JSON.parse(JSON.stringify(v1Element));
+      const unified = new UnifiedPPTElement(elementCopy);
       const cloned = unified.clone();
 
       expect(cloned.getId()).toBe(unified.getId());
@@ -154,28 +161,31 @@ describe('UnifiedPPTElementCollection', () => {
   const elements = [
     {
       id: '1',
-      type: 'text',
+      type: 'text' as const,
       left: 0, top: 0, width: 100, height: 50, rotate: 0,
       content: 'test1',
       defaultFontName: 'Arial',
       defaultColor: { color: '#000000', themeColor: '#000000' },
+      fit: 'none' as const,
       tag: 'v1'
     },
     {
       id: '2',
-      type: 'text',
+      type: 'text' as const,
       left: 0, top: 0, width: 100, height: 50, rotate: 0,
       content: 'test2',
-      defaultColor: '#ff0000'
+      defaultFontName: 'Arial',
+      defaultColor: '#ff0000',
+      fit: 'none' as const
     },
     {
       id: '3',
-      type: 'shape',
+      type: 'shape' as const,
       left: 0, top: 0, width: 100, height: 100, rotate: 0,
-      viewBox: [0, 0],
+      viewBox: [0, 0] as [number, number],
       path: 'M0,0 L100,100',
       fixedRatio: false,
-      fill: '#00ff00'
+      themeFill: { color: '#00ff00', themeColor: '#00ff00' }
     }
   ];
 
@@ -312,19 +322,22 @@ describe('VersionConversionUtils', () => {
   const mixedElements = [
     {
       id: '1',
-      type: 'text',
+      type: 'text' as const,
       left: 0, top: 0, width: 100, height: 50, rotate: 0,
       content: 'v1 text',
       defaultFontName: 'Arial',
       defaultColor: { color: '#000000', themeColor: '#000000' },
+      fit: 'none' as const,
       tag: 'v1'
     },
     {
       id: '2',
-      type: 'text',
+      type: 'text' as const,
       left: 0, top: 0, width: 100, height: 50, rotate: 0,
       content: 'v2 text',
-      defaultColor: '#ff0000'
+      defaultFontName: 'Arial',
+      defaultColor: '#ff0000',
+      fit: 'none' as const
     }
   ];
 
@@ -378,7 +391,7 @@ describe('VersionConversionUtils', () => {
         ...mixedElements,
         {
           id: '3',
-          type: 'none',
+          type: 'none' as const,
           left: 0, top: 0, width: 100, height: 50, rotate: 0,
           text: 'AI generated',
           from: 'ai'
@@ -395,17 +408,21 @@ describe('VersionConversionUtils', () => {
       const uniformElements = [
         {
           id: '1',
-          type: 'text',
+          type: 'text' as const,
           left: 0, top: 0, width: 100, height: 50, rotate: 0,
           content: 'text1',
-          defaultColor: '#000000'
+          defaultFontName: 'Arial',
+          defaultColor: '#000000',
+          fit: 'none' as const
         },
         {
           id: '2',
-          type: 'text',
+          type: 'text' as const,
           left: 0, top: 0, width: 100, height: 50, rotate: 0,
           content: 'text2',
-          defaultColor: '#ff0000'
+          defaultFontName: 'Arial',
+          defaultColor: '#ff0000',
+          fit: 'none' as const
         }
       ];
 

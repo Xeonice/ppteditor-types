@@ -7,6 +7,8 @@ import { memoize, memoizeBatch } from '../utils/memoize.js';
 import type {
   V1ColorConfig,
   V1ShapeGradient,
+  V1PPTElementShadow,
+  V1PPTElementOutline,
   V1CompatiblePPTElement,
   V1CompatibleTextElement,
   V1CompatibleShapeElement,
@@ -20,8 +22,11 @@ import type {
   PPTShapeElement,
   PPTImageElement,
   PPTLineElement,
+  PPTElementShadow,
+  PPTElementOutline,
   Gradient,
-  GradientColor
+  GradientColor,
+  LineStyleType
 } from '../types/v2-standard-types.js';
 
 /**
@@ -58,15 +63,44 @@ export class V1ToV2Adapter {
   })
 
   /**
+   * 阴影转换：V1PPTElementShadow → PPTElementShadow
+   */
+  static convertShadow = memoize((v1Shadow: V1PPTElementShadow | undefined): PPTElementShadow | undefined => {
+    if (!v1Shadow) return undefined;
+
+    return {
+      h: v1Shadow.h,
+      v: v1Shadow.v,
+      blur: v1Shadow.blur,
+      color: this.convertColor(v1Shadow.themeColor)
+    };
+  })
+
+  /**
+   * 描边转换：V1PPTElementOutline → PPTElementOutline
+   */
+  static convertOutline = memoize((v1Outline: V1PPTElementOutline | undefined): PPTElementOutline | undefined => {
+    if (!v1Outline) return undefined;
+
+    return {
+      style: v1Outline.style as LineStyleType,
+      width: v1Outline.width,
+      color: this.convertColor(v1Outline.themeColor)
+    };
+  })
+
+  /**
    * 文本元素转换
    */
   static convertTextElement = memoize((v1Element: V1CompatibleTextElement): PPTTextElement => {
-    const { tag, index, from, isDefault, enableShrink, themeFill, defaultColor, ...baseProps } = v1Element;
+    const { tag, index, from, isDefault, enableShrink, themeFill, defaultColor, shadow, outline, ...baseProps } = v1Element;
 
     return {
       ...baseProps,
       defaultColor: this.convertColor(defaultColor),
       fill: themeFill ? this.convertColor(themeFill) : undefined,
+      shadow: this.convertShadow(shadow),
+      outline: this.convertOutline(outline),
       // V2新增属性使用默认值
       textType: 'content'
     } as PPTTextElement;
@@ -76,14 +110,16 @@ export class V1ToV2Adapter {
    * 形状元素转换
    */
   static convertShapeElement = memoize((v1Element: V1CompatibleShapeElement): PPTShapeElement => {
-    const { tag, index, from, isDefault, keypoint, themeFill, gradient, ...baseProps } = v1Element;
+    const { tag, index, from, isDefault, keypoint, themeFill, gradient, shadow, outline, ...baseProps } = v1Element;
 
     return {
       ...baseProps,
       // Preserve path structure - use it directly if it's already a string, otherwise keep the original structure
       path: typeof v1Element.path === 'string' ? v1Element.path : v1Element.path,
       fill: this.convertColor(themeFill),
-      gradient: gradient ? this.convertGradient(gradient) : undefined
+      gradient: gradient ? this.convertGradient(gradient) : undefined,
+      shadow: this.convertShadow(shadow),
+      outline: this.convertOutline(outline)
     } as PPTShapeElement;
   })
 
@@ -183,6 +219,33 @@ export class V2ToV1Adapter {
   })
 
   /**
+   * 阴影转换：PPTElementShadow → V1PPTElementShadow
+   */
+  static convertShadow = memoize((v2Shadow: PPTElementShadow | undefined): V1PPTElementShadow | undefined => {
+    if (!v2Shadow) return undefined;
+
+    return {
+      h: v2Shadow.h,
+      v: v2Shadow.v,
+      blur: v2Shadow.blur,
+      themeColor: this.convertColor(v2Shadow.color)
+    };
+  })
+
+  /**
+   * 描边转换：PPTElementOutline → V1PPTElementOutline
+   */
+  static convertOutline = memoize((v2Outline: PPTElementOutline | undefined): V1PPTElementOutline | undefined => {
+    if (!v2Outline) return undefined;
+
+    return {
+      style: v2Outline.style as "dashed" | "solid",
+      width: v2Outline.width,
+      themeColor: v2Outline.color ? this.convertColor(v2Outline.color) : undefined
+    };
+  })
+
+  /**
    * 文本元素转换
    */
   static convertTextElement = memoize((v2Element: PPTTextElement): V1CompatibleTextElement => {
@@ -190,6 +253,8 @@ export class V2ToV1Adapter {
       ...v2Element,
       defaultColor: this.convertColor(v2Element.defaultColor),
       themeFill: v2Element.fill ? this.convertColor(v2Element.fill) : undefined,
+      shadow: this.convertShadow(v2Element.shadow),
+      outline: this.convertOutline(v2Element.outline),
       // 添加V1默认属性
       tag: undefined,
       index: undefined,
@@ -207,6 +272,8 @@ export class V2ToV1Adapter {
       ...v2Element,
       themeFill: this.convertColor(v2Element.fill),
       gradient: v2Element.gradient ? this.convertGradient(v2Element.gradient) : undefined,
+      shadow: this.convertShadow(v2Element.shadow),
+      outline: this.convertOutline(v2Element.outline),
       // 添加V1默认属性
       tag: undefined,
       index: undefined,

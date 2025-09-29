@@ -76,6 +76,7 @@ describe('V1ToV2Adapter', () => {
         defaultFontName: 'Arial',
         defaultColor: { color: '#000000', themeColor: '#000000' },
         themeFill: { color: '#ffffff', themeColor: '#ffffff' },
+        fit: 'none',
         enableShrink: true,
         tag: 'test-tag',
         index: 1,
