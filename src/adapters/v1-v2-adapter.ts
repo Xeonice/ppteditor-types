@@ -31,10 +31,16 @@ import type {
 
 /**
  * V1 → V2 转换器
+ * @description 提供从V1格式到V2标准格式的类型转换功能
  */
 export class V1ToV2Adapter {
   /**
    * 颜色转换：V1ColorConfig → V2 string
+   * @param v1Color - V1格式的颜色配置对象
+   * @returns V2格式的颜色字符串 (hex格式)
+   * @example
+   * const color = V1ToV2Adapter.convertColor({ color: '#ff0000', themeColor: '#ff0000' })
+   * // Returns: '#ff0000'
    */
   static convertColor = memoize((v1Color: V1ColorConfig | undefined | null): string => {
     // Add null safety checks
@@ -44,6 +50,15 @@ export class V1ToV2Adapter {
 
   /**
    * 渐变转换：V1ShapeGradient → V2 Gradient
+   * @param v1Gradient - V1格式的渐变配置
+   * @returns V2格式的渐变对象
+   * @throws {Error} 如果渐变颜色少于2个
+   * @example
+   * const gradient = V1ToV2Adapter.convertGradient({
+   *   type: 'linear',
+   *   themeColor: [color1, color2],
+   *   rotate: 45
+   * })
    */
   static convertGradient = memoize((v1Gradient: V1ShapeGradient): Gradient => {
     // Validate array length
@@ -64,6 +79,13 @@ export class V1ToV2Adapter {
 
   /**
    * 阴影转换：V1PPTElementShadow → PPTElementShadow
+   * @param v1Shadow - V1格式的阴影配置
+   * @returns V2格式的阴影对象，如果输入为undefined则返回undefined
+   * @example
+   * const shadow = V1ToV2Adapter.convertShadow({
+   *   h: 10, v: 10, blur: 5,
+   *   themeColor: { color: '#333', themeColor: '#333' }
+   * })
    */
   static convertShadow = memoize((v1Shadow: V1PPTElementShadow | undefined): PPTElementShadow | undefined => {
     if (!v1Shadow) return undefined;
@@ -78,6 +100,13 @@ export class V1ToV2Adapter {
 
   /**
    * 描边转换：V1PPTElementOutline → PPTElementOutline
+   * @param v1Outline - V1格式的描边配置
+   * @returns V2格式的描边对象，如果输入为undefined则返回undefined
+   * @example
+   * const outline = V1ToV2Adapter.convertOutline({
+   *   style: 'dashed', width: 2,
+   *   themeColor: { color: '#f00', themeColor: '#f00' }
+   * })
    */
   static convertOutline = memoize((v1Outline: V1PPTElementOutline | undefined): PPTElementOutline | undefined => {
     if (!v1Outline) return undefined;
@@ -91,6 +120,8 @@ export class V1ToV2Adapter {
 
   /**
    * 文本元素转换
+   * @param v1Element - V1格式的文本元素
+   * @returns V2格式的文本元素，移除V1特有属性
    */
   static convertTextElement = memoize((v1Element: V1CompatibleTextElement): PPTTextElement => {
     const { tag, index, from, isDefault, enableShrink, themeFill, defaultColor, shadow, outline, ...baseProps } = v1Element;
@@ -108,6 +139,8 @@ export class V1ToV2Adapter {
 
   /**
    * 形状元素转换
+   * @param v1Element - V1格式的形状元素
+   * @returns V2格式的形状元素，保留path结构并转换样式属性
    */
   static convertShapeElement = memoize((v1Element: V1CompatibleShapeElement): PPTShapeElement => {
     const { tag, index, from, isDefault, keypoint, themeFill, gradient, shadow, outline, ...baseProps } = v1Element;
@@ -125,6 +158,8 @@ export class V1ToV2Adapter {
 
   /**
    * 图片元素转换
+   * @param v1Element - V1格式的图片元素
+   * @returns V2格式的图片元素，移除V1特有的loading和size属性
    */
   static convertImageElement = memoize((v1Element: V1CompatibleImageElement): PPTImageElement => {
     const { tag, index, from, isDefault, size, loading, ...baseProps } = v1Element;
@@ -138,6 +173,8 @@ export class V1ToV2Adapter {
 
   /**
    * 线条元素转换
+   * @param v1Element - V1格式的线条元素
+   * @returns V2格式的线条元素，转换颜色和宽度属性
    */
   static convertLineElement = memoize((v1Element: V1CompatibleLineElement): PPTLineElement => {
     const { tag, index, from, isDefault, themeColor, lineWidth, ...baseProps } = v1Element;
@@ -153,6 +190,8 @@ export class V1ToV2Adapter {
 
   /**
    * 通用元素转换
+   * @param v1Element - V1格式的PPT元素（任意类型）
+   * @returns V2格式的PPT元素，如果类型不支持则返回null
    */
   static convertElement = memoize((v1Element: V1CompatiblePPTElement): PPTElement | null => {
     switch (v1Element.type) {
@@ -174,6 +213,8 @@ export class V1ToV2Adapter {
 
   /**
    * 批量转换元素数组
+   * @param v1Elements - V1格式的PPT元素数组
+   * @returns V2格式的PPT元素数组，自动过滤掉无法转换的元素
    */
   static convertElements = memoizeBatch((v1Elements: V1CompatiblePPTElement[]): PPTElement[] => {
     return v1Elements

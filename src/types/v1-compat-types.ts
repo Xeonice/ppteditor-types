@@ -7,14 +7,23 @@
 // 导入项目特有的主题颜色类型（如果需要）
 export type ThemeColorType = string; // 项目特定的主题颜色类型
 
-// 优化的V1颜色配置类型 - 基于适配文档的字段扩展模式
-export interface V1ColorConfig {
+// V1标准颜色配置 - 严格符合V1规范
+export interface V1StandardColorConfig {
   color: string;                    // V1 必需字段
-  themeColor?: string;             // V1 字段，项目中改为可选以适配现有代码
+  themeColor: string;              // V1 必需字段
+}
+
+// 项目特定的V1颜色配置 - 支持向后兼容
+export interface V1ProjectColorConfig {
+  color: string;                    // V1 必需字段
+  themeColor?: string;             // 项目中改为可选以适配现有代码
   colorType?: ThemeColorType;      // 项目扩展：主题色类型
   colorIndex?: number;             // 项目扩展：主题色索引
   opacity?: number;                // 项目扩展：透明度控制
 }
+
+// 联合类型提供灵活性，同时保持类型安全
+export type V1ColorConfig = V1StandardColorConfig | V1ProjectColorConfig;
 
 // V1项目中的渐变类型 - 基于适配文档的类型替换模式
 export interface V1ShapeGradient {

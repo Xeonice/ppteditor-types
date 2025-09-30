@@ -13,7 +13,9 @@ import type {
   V1CompatibleTextElement,
   V1CompatibleShapeElement,
   V1ColorConfig,
-  V1ShapeGradient
+  V1ShapeGradient,
+  V1PPTElementShadow,
+  V1PPTElementOutline
 } from '../../src/types/v1-compat-types.js';
 
 describe('V1ToV2Adapter', () => {
@@ -36,6 +38,85 @@ describe('V1ToV2Adapter', () => {
 
       const result = V1ToV2Adapter.convertColor(v1Color);
       expect(result).toBe('#00ff00');
+    });
+  });
+
+  describe('convertShadow', () => {
+    it('should convert V1PPTElementShadow to PPTElementShadow', () => {
+      const v1Shadow: V1PPTElementShadow = {
+        h: 10,
+        v: 10,
+        blur: 5,
+        themeColor: { color: '#333333', themeColor: '#333333' }
+      };
+
+      const result = V1ToV2Adapter.convertShadow(v1Shadow);
+
+      expect(result).toBeDefined();
+      expect(result?.h).toBe(10);
+      expect(result?.v).toBe(10);
+      expect(result?.blur).toBe(5);
+      expect(result?.color).toBe('#333333');
+    });
+
+    it('should return undefined for undefined input', () => {
+      const result = V1ToV2Adapter.convertShadow(undefined);
+      expect(result).toBeUndefined();
+    });
+
+    it('should handle shadow with partial color config', () => {
+      const v1Shadow: V1PPTElementShadow = {
+        h: 5,
+        v: 5,
+        blur: 2,
+        themeColor: { color: '', themeColor: '#999999' } as V1ColorConfig
+      };
+
+      const result = V1ToV2Adapter.convertShadow(v1Shadow);
+      expect(result?.color).toBe('#999999');
+    });
+  });
+
+  describe('convertOutline', () => {
+    it('should convert V1PPTElementOutline to PPTElementOutline', () => {
+      const v1Outline: V1PPTElementOutline = {
+        style: 'dashed',
+        width: 2,
+        themeColor: { color: '#ff0000', themeColor: '#ff0000' }
+      };
+
+      const result = V1ToV2Adapter.convertOutline(v1Outline);
+
+      expect(result).toBeDefined();
+      expect(result?.style).toBe('dashed');
+      expect(result?.width).toBe(2);
+      expect(result?.color).toBe('#ff0000');
+    });
+
+    it('should return undefined for undefined input', () => {
+      const result = V1ToV2Adapter.convertOutline(undefined);
+      expect(result).toBeUndefined();
+    });
+
+    it('should handle outline with undefined themeColor', () => {
+      const v1Outline: V1PPTElementOutline = {
+        style: 'solid',
+        width: 1
+      };
+
+      const result = V1ToV2Adapter.convertOutline(v1Outline);
+      expect(result?.color).toBe('#000000');
+    });
+
+    it('should handle outline with partial fields', () => {
+      const v1Outline: V1PPTElementOutline = {
+        themeColor: { color: '#00ff00', themeColor: '#00ff00' }
+      };
+
+      const result = V1ToV2Adapter.convertOutline(v1Outline);
+      expect(result?.style).toBeUndefined();
+      expect(result?.width).toBeUndefined();
+      expect(result?.color).toBe('#00ff00');
     });
   });
 

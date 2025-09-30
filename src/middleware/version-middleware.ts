@@ -201,25 +201,43 @@ export class VersionMiddleware {
       try {
         // 基本验证
         if (!element || typeof element !== 'object') {
-          throw new Error('元素为空或不是对象');
+          const elementInfo = element === null ? 'null' : typeof element;
+          throw new Error(`Invalid element at index ${elements.indexOf(element)}: expected object, got ${elementInfo}`);
         }
         if (!element.id || !element.type) {
-          throw new Error('元素缺少必要的id或type属性');
+          const missingFields = [];
+          if (!element.id) missingFields.push('id');
+          if (!element.type) missingFields.push('type');
+          throw new Error(`Element at index ${elements.indexOf(element)} missing required fields: ${missingFields.join(', ')}. Element preview: ${JSON.stringify(element).substring(0, 100)}`);
         }
         if (typeof element.left !== 'number' ||
             typeof element.top !== 'number') {
-          throw new Error('元素缺少必要的位置属性');
+          const invalidFields = [];
+          if (typeof element.left !== 'number') invalidFields.push(`left (got ${typeof element.left})`);
+          if (typeof element.top !== 'number') invalidFields.push(`top (got ${typeof element.top})`);
+          throw new Error(`Element ${element.id} (${element.type}) has invalid position fields: ${invalidFields.join(', ')}`);
         }
         // 线条元素不需要width/height属性
         if (element.type !== 'line' &&
             (typeof element.width !== 'number' || typeof element.height !== 'number')) {
-          throw new Error('元素缺少必要的尺寸属性');
+          const invalidDimensions = [];
+          if (typeof element.width !== 'number') invalidDimensions.push(`width (got ${typeof element.width})`);
+          if (typeof element.height !== 'number') invalidDimensions.push(`height (got ${typeof element.height})`);
+          throw new Error(`Element ${element.id} (${element.type}) has invalid dimensions: ${invalidDimensions.join(', ')}`);
         }
         validElements.push(element);
       } catch (validationError) {
-        const errorMessage = `元素验证失败 (id: ${element?.id || 'unknown'}): ${validationError instanceof Error ? validationError.message : String(validationError)}`;
+        const elementId = element?.id || 'unknown';
+        const elementType = element?.type || 'unknown';
+        const errorMessage = `Validation failed for element ${elementId} (type: ${elementType}): ${validationError instanceof Error ? validationError.message : String(validationError)}`;
         errors.push(errorMessage);
-        this.logger('error', errorMessage, { element });
+        this.logger('error', errorMessage, {
+          element: {
+            id: elementId,
+            type: elementType,
+            preview: JSON.stringify(element).substring(0, 200)
+          }
+        });
       }
     }
 
