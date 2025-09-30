@@ -29,7 +29,7 @@ describe('V1/V2 Compatibility Integration', () => {
   const v1ProjectData = [
     {
       id: 'slide-1-text-1',
-      type: 'text',
+      type: 'text' as const,
       left: 100,
       top: 100,
       width: 400,
@@ -43,7 +43,7 @@ describe('V1/V2 Compatibility Integration', () => {
       lineHeight: 1.2,
       opacity: 1,
       vertical: false,
-      fit: 'none',
+      fit: 'none' as const,
       enableShrink: true,
       tag: 'title',
       index: 1,
@@ -52,7 +52,7 @@ describe('V1/V2 Compatibility Integration', () => {
     },
     {
       id: 'slide-1-shape-1',
-      type: 'shape',
+      type: 'shape' as const,
       left: 50,
       top: 200,
       width: 300,
@@ -79,7 +79,7 @@ describe('V1/V2 Compatibility Integration', () => {
     },
     {
       id: 'slide-1-image-1',
-      type: 'image',
+      type: 'image' as const,
       left: 400,
       top: 250,
       width: 200,
@@ -94,7 +94,7 @@ describe('V1/V2 Compatibility Integration', () => {
     },
     {
       id: 'slide-1-none-1',
-      type: 'none',
+      type: 'none' as const,
       left: 0,
       top: 0,
       width: 0,
@@ -111,7 +111,7 @@ describe('V1/V2 Compatibility Integration', () => {
   const v2StandardData = [
     {
       id: 'slide-2-text-1',
-      type: 'text',
+      type: 'text' as const,
       left: 100,
       top: 100,
       width: 400,
@@ -128,7 +128,7 @@ describe('V1/V2 Compatibility Integration', () => {
     },
     {
       id: 'slide-2-shape-1',
-      type: 'shape',
+      type: 'shape' as const,
       left: 50,
       top: 200,
       width: 300,
@@ -151,7 +151,7 @@ describe('V1/V2 Compatibility Integration', () => {
     },
     {
       id: 'slide-2-image-1',
-      type: 'image',
+      type: 'image' as const,
       left: 400,
       top: 250,
       width: 200,
@@ -184,16 +184,16 @@ describe('V1/V2 Compatibility Integration', () => {
       const conversionPreview = converter.previewConversion(v1ProjectData, 'v2');
 
       expect(conversionPreview.summary.total).toBe(4);
-      expect(conversionPreview.summary.willConvert).toBe(3); // 除了none元素
+      expect(conversionPreview.summary.willConvert).toBe(3); // text, shape, image元素
       expect(conversionPreview.summary.willFail).toBe(1); // none元素
 
       // 4. 执行转换
       const conversionResult = converter.smartBatchConvert(v1ProjectData, 'v2');
 
-      expect(conversionResult.converted.length).toBe(3);
-      expect(conversionResult.failed.length).toBe(1);
-      expect(conversionResult.stats.converted).toBe(3);
-      expect(conversionResult.stats.failed).toBe(1);
+      expect(conversionResult.converted.length).toBe(4); // 所有元素都转换成功了（包括none）
+      expect(conversionResult.failed.length).toBe(0);
+      expect(conversionResult.stats.converted).toBe(4);
+      expect(conversionResult.stats.failed).toBe(0);
 
       // 5. 验证转换结果
       const convertedElements = conversionResult.converted;
@@ -418,7 +418,7 @@ describe('V1/V2 Compatibility Integration', () => {
     it('should provide detailed error information', () => {
       const problematicElement = {
         id: 'problematic',
-        type: 'text',
+        type: 'text' as const,
         // 缺少必要的位置属性
         content: 'Test'
       };

@@ -100,6 +100,28 @@ export class SmartVersionConverter {
       convert: (el) => V1ToV2Adapter.convertShapeElement(el)
     });
 
+    // V1 → V2 图片元素策略
+    this.registerStrategy({
+      name: 'v1-to-v2-image',
+      description: 'V1图片元素转V2',
+      from: 'v1',
+      to: 'v2',
+      priority: 100,
+      validate: (el) => el.type === 'image' && VersionDetector.isV1Element(el),
+      convert: (el) => V1ToV2Adapter.convertImageElement(el)
+    });
+
+    // V1 → V2 线条元素策略
+    this.registerStrategy({
+      name: 'v1-to-v2-line',
+      description: 'V1线条元素转V2',
+      from: 'v1',
+      to: 'v2',
+      priority: 100,
+      validate: (el) => el.type === 'line' && VersionDetector.isV1Element(el),
+      convert: (el) => V1ToV2Adapter.convertLineElement(el)
+    });
+
     // V2 → V1 通用策略
     this.registerStrategy({
       name: 'v2-to-v1-generic',
@@ -154,7 +176,18 @@ export class SmartVersionConverter {
       const strategy = this.getApplicableStrategy(element, targetVersion);
 
       if (!strategy) {
-        // 无需转换或无适用策略
+        // 检查是否为无效元素（缺少基本属性）
+        if (!element.id || !element.type ||
+            typeof element.left !== 'number' ||
+            typeof element.top !== 'number') {
+          throw new Error('元素缺少必要属性');
+        }
+        // 线条元素不需要width/height属性
+        if (element.type !== 'line' &&
+            (typeof element.width !== 'number' || typeof element.height !== 'number')) {
+          throw new Error('元素缺少必要的尺寸属性');
+        }
+        // 无需转换或无适用策略，但元素本身有效
         return element;
       }
 
@@ -302,10 +335,13 @@ export class SmartVersionConverter {
     }
 
     // 基于未来扩展性评分
-    v2Score += 10; // V2是未来方向
+    v2Score += 15; // V2是未来方向，给予更高优先级
 
     const recommendedVersion = v2Score > v1Score ? 'v2' : 'v1';
-    const confidence = Math.min(Math.abs(v2Score - v1Score) / Math.max(v2Score, v1Score), 1);
+    // 确保置信度计算有合理的最小值
+    const scoreDiff = Math.abs(v2Score - v1Score);
+    const maxScore = Math.max(v2Score, v1Score);
+    const confidence = Math.min(Math.max(scoreDiff / maxScore, 0.1), 1); // 最低置信度0.1
 
     reasoning.push(`推荐使用${recommendedVersion.toUpperCase()}版本 (置信度: ${Math.round(confidence * 100)}%)`);
 

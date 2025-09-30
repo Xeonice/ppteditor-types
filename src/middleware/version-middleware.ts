@@ -195,9 +195,55 @@ export class VersionMiddleware {
       this.logger('warn', '兼容性检查发现问题', compatibility);
     }
 
+    // 预处理：验证元素并过滤掉无效元素
+    const validElements: (V1CompatiblePPTElement | PPTElement)[] = [];
+    for (const element of elements) {
+      try {
+        // 基本验证
+        if (!element || typeof element !== 'object') {
+          const elementInfo = element === null ? 'null' : typeof element;
+          throw new Error(`Invalid element at index ${elements.indexOf(element)}: expected object, got ${elementInfo}`);
+        }
+        if (!element.id || !element.type) {
+          const missingFields = [];
+          if (!element.id) missingFields.push('id');
+          if (!element.type) missingFields.push('type');
+          throw new Error(`Element at index ${elements.indexOf(element)} missing required fields: ${missingFields.join(', ')}. Element preview: ${JSON.stringify(element).substring(0, 100)}`);
+        }
+        if (typeof element.left !== 'number' ||
+            typeof element.top !== 'number') {
+          const invalidFields = [];
+          if (typeof element.left !== 'number') invalidFields.push(`left (got ${typeof element.left})`);
+          if (typeof element.top !== 'number') invalidFields.push(`top (got ${typeof element.top})`);
+          throw new Error(`Element ${element.id} (${element.type}) has invalid position fields: ${invalidFields.join(', ')}`);
+        }
+        // 线条元素不需要width/height属性
+        if (element.type !== 'line' &&
+            (typeof element.width !== 'number' || typeof element.height !== 'number')) {
+          const invalidDimensions = [];
+          if (typeof element.width !== 'number') invalidDimensions.push(`width (got ${typeof element.width})`);
+          if (typeof element.height !== 'number') invalidDimensions.push(`height (got ${typeof element.height})`);
+          throw new Error(`Element ${element.id} (${element.type}) has invalid dimensions: ${invalidDimensions.join(', ')}`);
+        }
+        validElements.push(element);
+      } catch (validationError) {
+        const elementId = element?.id || 'unknown';
+        const elementType = element?.type || 'unknown';
+        const errorMessage = `Validation failed for element ${elementId} (type: ${elementType}): ${validationError instanceof Error ? validationError.message : String(validationError)}`;
+        errors.push(errorMessage);
+        this.logger('error', errorMessage, {
+          element: {
+            id: elementId,
+            type: elementType,
+            preview: JSON.stringify(element).substring(0, 200)
+          }
+        });
+      }
+    }
+
     // 批量转换
     try {
-      const conversionResult = VersionConversionUtils.normalizeToVersion(elements, targetVersion);
+      const conversionResult = VersionConversionUtils.normalizeToVersion(validElements, targetVersion);
       processedElements.push(...conversionResult.converted);
 
       if (conversionResult.stats.skipped > 0) {
@@ -209,7 +255,7 @@ export class VersionMiddleware {
     } catch (error) {
       const errorMessage = `批量处理失败: ${error instanceof Error ? error.message : String(error)}`;
       errors.push(errorMessage);
-      this.logger('error', errorMessage, { elements: elements.length, context });
+      this.logger('error', errorMessage, { elements: validElements.length, context });
 
       if (this.config.errorHandling === 'throw') {
         throw error;
