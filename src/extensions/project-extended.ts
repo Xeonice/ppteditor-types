@@ -37,30 +37,28 @@ export type AIImageStatus = 'pending' | 'success' | 'failed'
 
 /**
  * 主题色类型
- * 定义了支持的主题色种类
+ *
+ * Office PPT 主题色系统包含：
+ * - 6种强调色（accent1-6）
+ * - 2种深色（dk1-2，用于文本）
+ * - 2种浅色（lt1-2，用于背景）
+ *
+ * 参考: Office Open XML 主题色规范
  */
 export type ThemeColorType =
-  | 'accent1'
-  | 'accent2'
-  | 'accent3'
-  | 'accent4'
-  | 'accent5'
-  | 'accent6'
-  | 'text1'
-  | 'text2'
-  | 'background1'
-  | 'background2'
-
-/**
- * 颜色类型枚举
- * 定义了支持的颜色表示方式
- */
-export type ColorType =
-  | 'theme'      // 主题色
-  | 'rgb'        // RGB 颜色
-  | 'hsl'        // HSL 颜色
-  | 'hex'        // 十六进制颜色
-  | 'custom'     // 自定义颜色
+  // 强调色（Accent Colors）
+  | 'accent1'      // 强调色1
+  | 'accent2'      // 强调色2
+  | 'accent3'      // 强调色3
+  | 'accent4'      // 强调色4
+  | 'accent5'      // 强调色5
+  | 'accent6'      // 强调色6
+  // 深色（Dark Colors）- 主要用于文本
+  | 'dk1'          // 深色1（主要文本）
+  | 'dk2'          // 深色2（次要文本）
+  // 浅色（Light Colors）- 主要用于背景
+  | 'lt1'          // 浅色1（主要背景）
+  | 'lt2'          // 浅色2（次要背景）
 
 /**
  * 颜色配置类型
@@ -73,27 +71,33 @@ export type ColorType =
  *   color: '#FF0000'
  * }
  *
- * // 主题色配置
+ * // 主题色配置（完整版）
  * const themeColor: ColorConfig = {
  *   color: '#FF0000',
  *   themeColor: {
  *     color: '#FF0000',
  *     type: 'accent1'
  *   },
- *   colorType: 'theme',
  *   opacity: 0.8
+ * }
+ *
+ * // 主题色配置（简化版）
+ * const simpleThemeColor: ColorConfig = {
+ *   color: '#FF0000',
+ *   colorType: 'accent1',  // 直接指定主题色类型
+ *   colorIndex: 1
  * }
  * ```
  */
 export interface ColorConfig {
-  color: string                    // 实际颜色值
-  themeColor?: {                   // 主题色引用
+  color: string                    // 实际颜色值（必需）
+  themeColor?: {                   // 主题色引用（可选，完整版）
     color: string
-    type: ThemeColorType           // 主题色类型（类型安全）
+    type: ThemeColorType           // 主题色类型
   }
-  colorType?: ColorType            // 颜色类型（类型安全）
-  colorIndex?: number              // 颜色索引
-  opacity?: number                 // 不透明度（0-1）
+  colorType?: ThemeColorType       // 主题色类型（可选，简化版，用于不需要完整 themeColor 对象的场景）
+  colorIndex?: number              // 颜色索引（可选）
+  opacity?: number                 // 不透明度 0-1（可选）
 }
 
 // ==================== 项目扩展的背景类型 ====================
@@ -403,10 +407,14 @@ export function validateColorConfig(data: unknown): data is ColorConfig {
 
   if (color.colorIndex !== undefined && typeof color.colorIndex !== 'number') return false
 
-  // Validate colorType enum
+  // Validate colorType enum (ThemeColorType)
   if (color.colorType !== undefined) {
     if (typeof color.colorType !== 'string') return false
-    if (!['theme', 'rgb', 'hsl', 'hex', 'custom'].includes(color.colorType as string)) return false
+    const validColorTypes = [
+      'accent1', 'accent2', 'accent3', 'accent4', 'accent5', 'accent6',
+      'dk1', 'dk2', 'lt1', 'lt2'
+    ]
+    if (!validColorTypes.includes(color.colorType as string)) return false
   }
 
   if (color.themeColor !== undefined) {
