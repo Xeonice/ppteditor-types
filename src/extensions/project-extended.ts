@@ -52,6 +52,17 @@ export type ThemeColorType =
   | 'background2'
 
 /**
+ * 颜色类型枚举
+ * 定义了支持的颜色表示方式
+ */
+export type ColorType =
+  | 'theme'      // 主题色
+  | 'rgb'        // RGB 颜色
+  | 'hsl'        // HSL 颜色
+  | 'hex'        // 十六进制颜色
+  | 'custom'     // 自定义颜色
+
+/**
  * 颜色配置类型
  * 支持主题色系统的复杂颜色配置
  *
@@ -69,6 +80,7 @@ export type ThemeColorType =
  *     color: '#FF0000',
  *     type: 'accent1'
  *   },
+ *   colorType: 'theme',
  *   opacity: 0.8
  * }
  * ```
@@ -79,9 +91,9 @@ export interface ColorConfig {
     color: string
     type: ThemeColorType           // 主题色类型（类型安全）
   }
-  colorType?: string               // 颜色类型
+  colorType?: ColorType            // 颜色类型（类型安全）
   colorIndex?: number              // 颜色索引
-  opacity?: number                 // 不透明度
+  opacity?: number                 // 不透明度（0-1）
 }
 
 // ==================== 项目扩展的背景类型 ====================
@@ -382,9 +394,20 @@ export function validateColorConfig(data: unknown): data is ColorConfig {
   const color = data as Record<string, unknown>
 
   if (typeof color.color !== 'string') return false
-  if (color.opacity !== undefined && typeof color.opacity !== 'number') return false
+
+  // Validate opacity range (0-1)
+  if (color.opacity !== undefined) {
+    if (typeof color.opacity !== 'number') return false
+    if (color.opacity < 0 || color.opacity > 1) return false
+  }
+
   if (color.colorIndex !== undefined && typeof color.colorIndex !== 'number') return false
-  if (color.colorType !== undefined && typeof color.colorType !== 'string') return false
+
+  // Validate colorType enum
+  if (color.colorType !== undefined) {
+    if (typeof color.colorType !== 'string') return false
+    if (!['theme', 'rgb', 'hsl', 'hex', 'custom'].includes(color.colorType as string)) return false
+  }
 
   if (color.themeColor !== undefined) {
     if (typeof color.themeColor !== 'object' || color.themeColor === null) return false
@@ -435,7 +458,11 @@ export function validateProjectSlideBackground(data: unknown): data is ProjectSl
       if (bg.gradientColor.length !== 2) return false
       if (!validateColorConfig(bg.gradientColor[0])) return false
       if (!validateColorConfig(bg.gradientColor[1])) return false
-      if (bg.gradientRotate !== undefined && typeof bg.gradientRotate !== 'number') return false
+      // Validate gradientRotate range (0-360)
+      if (bg.gradientRotate !== undefined) {
+        if (typeof bg.gradientRotate !== 'number') return false
+        if (bg.gradientRotate < 0 || bg.gradientRotate > 360) return false
+      }
       return true
 
     default:

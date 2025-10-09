@@ -139,6 +139,6 @@ export { MiddlewareModule as Middleware };
 export { ExtensionsModule as Extensions };
 
 // ===== 版本信息导出 =====
-export const PPTEDITOR_TYPES_VERSION = '2.0.0';
+export const PPTEDITOR_TYPES_VERSION = '2.2.0';
 export const SCHEMA_VERSION = 2;
 export const SUPPORTS_V1_COMPATIBILITY = true;
