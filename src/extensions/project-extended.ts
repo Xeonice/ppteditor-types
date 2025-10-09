@@ -31,14 +31,53 @@ export type PageTag =
 export type TemplatePayType = 'free' | 'not_free'
 
 /**
+ * AI 图片生成状态
+ */
+export type AIImageStatus = 'pending' | 'success' | 'failed'
+
+/**
+ * 主题色类型
+ * 定义了支持的主题色种类
+ */
+export type ThemeColorType =
+  | 'accent1'
+  | 'accent2'
+  | 'accent3'
+  | 'accent4'
+  | 'accent5'
+  | 'accent6'
+  | 'text1'
+  | 'text2'
+  | 'background1'
+  | 'background2'
+
+/**
  * 颜色配置类型
  * 支持主题色系统的复杂颜色配置
+ *
+ * @example
+ * ```typescript
+ * // 简单颜色
+ * const simpleColor: ColorConfig = {
+ *   color: '#FF0000'
+ * }
+ *
+ * // 主题色配置
+ * const themeColor: ColorConfig = {
+ *   color: '#FF0000',
+ *   themeColor: {
+ *     color: '#FF0000',
+ *     type: 'accent1'
+ *   },
+ *   opacity: 0.8
+ * }
+ * ```
  */
 export interface ColorConfig {
   color: string                    // 实际颜色值
   themeColor?: {                   // 主题色引用
     color: string
-    type: string                   // 主题色类型 (如 'accent1', 'accent2' 等)
+    type: ThemeColorType           // 主题色类型（类型安全）
   }
   colorType?: string               // 颜色类型
   colorIndex?: number              // 颜色索引
@@ -55,6 +94,33 @@ export interface ColorConfig {
  * 2. 图片背景使用扁平结构（image + imageSize）
  * 3. 渐变背景使用扁平结构（gradientType + gradientColor + gradientRotate）
  * 4. 渐变色仅支持双色渐变
+ *
+ * @example
+ * ```typescript
+ * // 纯色背景
+ * const solidBg: ProjectSlideBackground = {
+ *   type: 'solid',
+ *   themeColor: { color: '#FFFFFF' }
+ * }
+ *
+ * // 图片背景
+ * const imageBg: ProjectSlideBackground = {
+ *   type: 'image',
+ *   image: 'https://example.com/bg.jpg',
+ *   imageSize: 'cover'
+ * }
+ *
+ * // 渐变背景
+ * const gradientBg: ProjectSlideBackground = {
+ *   type: 'gradient',
+ *   gradientType: 'linear',
+ *   gradientColor: [
+ *     { color: '#FF0000' },
+ *     { color: '#0000FF' }
+ *   ],
+ *   gradientRotate: 90
+ * }
+ * ```
  */
 export interface ProjectSlideBackground {
   type: 'solid' | 'image' | 'gradient'
@@ -72,6 +138,22 @@ export interface ProjectSlideBackground {
  * 项目扩展的幻灯片基础类型
  *
  * 继承自标准 Slide，并添加项目特有字段
+ *
+ * @example
+ * ```typescript
+ * const slide: ProjectSlideBase = {
+ *   id: 'slide-1',
+ *   elements: [],
+ *   tag: 'content',
+ *   pageId: 'page-123',
+ *   aiImage: true,
+ *   aiImageStatus: 'success',
+ *   background: {
+ *     type: 'solid',
+ *     themeColor: { color: '#F5F5F5' }
+ *   }
+ * }
+ * ```
  */
 export interface ProjectSlideBase extends Omit<StandardSlide, 'background' | 'sectionTag' | 'type'> {
   // 覆盖标准库的 background 字段
@@ -82,7 +164,7 @@ export interface ProjectSlideBase extends Omit<StandardSlide, 'background' | 'se
   tag?: PageTag                    // 页面类型标签
   listCount?: number               // 列表项数量（用于 tag === 'list'）
   aiImage?: boolean                // 是否包含AI生成的图片
-  aiImageStatus?: string           // AI图片生成状态
+  aiImageStatus?: AIImageStatus    // AI图片生成状态（类型安全）
   fillPageType?: number            // 页面填充类型
 }
 
@@ -90,6 +172,19 @@ export interface ProjectSlideBase extends Omit<StandardSlide, 'background' | 'se
  * 列表页专用类型
  *
  * 项目特有的列表页类型，包含付费信息和自动填充功能
+ *
+ * @example
+ * ```typescript
+ * const listSlide: ProjectSlideListBase = {
+ *   id: 'list-1',
+ *   elements: [],
+ *   tag: 'list',
+ *   payType: 'free',
+ *   listFlag: 'template-list-1',
+ *   autoFill: true,
+ *   listCount: 20
+ * }
+ * ```
  */
 export interface ProjectSlideListBase extends ProjectSlideBase {
   tag: 'list'                      // 固定为 'list'
@@ -107,10 +202,58 @@ export type ProjectSlideList = ProjectSlideListBase & { elements: PPTElement[] }
  * 项目扩展的幻灯片类型（联合类型）
  *
  * 包含普通幻灯片和列表幻灯片两种类型
+ *
+ * @example
+ * ```typescript
+ * // 普通幻灯片
+ * const regularSlide: ProjectSlide = {
+ *   id: 'slide-1',
+ *   elements: [],
+ *   tag: 'content',
+ *   pageId: 'page-1'
+ * }
+ *
+ * // 列表页
+ * const listSlide: ProjectSlide = {
+ *   id: 'slide-2',
+ *   elements: [],
+ *   tag: 'list',
+ *   payType: 'free',
+ *   listFlag: 'list-1',
+ *   autoFill: true
+ * }
+ * ```
  */
 export type ProjectSlide =
   | (ProjectSlideBase & { elements: PPTElement[] })  // 普通幻灯片
   | ProjectSlideList                                  // 列表幻灯片
+
+// ==================== 类型守卫辅助函数 ====================
+
+/**
+ * 类型守卫：检查幻灯片是否为列表页
+ *
+ * @param slide - 要检查的幻灯片
+ * @returns 如果是列表页返回 true，否则返回 false
+ *
+ * @example
+ * ```typescript
+ * const slide: ProjectSlide = getSlide()
+ *
+ * if (isProjectSlideList(slide)) {
+ *   // TypeScript 会将 slide 类型缩窄为 ProjectSlideList
+ *   console.log(slide.payType, slide.autoFill)
+ * }
+ * ```
+ */
+export function isProjectSlideList(slide: ProjectSlide): slide is ProjectSlideList {
+  return (
+    slide.tag === 'list' &&
+    'payType' in slide &&
+    'listFlag' in slide &&
+    'autoFill' in slide
+  )
+}
 
 // ==================== 导出重命名类型 ====================
 
