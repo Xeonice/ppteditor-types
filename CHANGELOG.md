@@ -5,6 +5,60 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2025-10-09
+
+### ✨ 新增
+
+- **扩展属性支持模块** (`src/extensions/element-extensions.ts`)
+  - 新增 `PPTElementExtension` 接口定义
+  - 新增 `hasTag`, `hasIndex`, `hasFrom`, `hasIsDefault` 类型守卫函数
+  - 新增 `hasExtensions` 组合类型守卫
+  - 新增 `WithExtension<T>` 工具类型
+
+- **颜色配置工具模块** (`src/utils/color-helpers.ts`)
+  - 新增 `stringToColorConfig` - 字符串转颜色配置
+  - 新增 `colorConfigToString` - 颜色配置转字符串
+  - 新增 `createThemeColorConfig` - 创建主题色配置
+  - 新增 `isThemeColor` - 检查是否为主题色
+  - 新增 `mergeColorConfig` - 合并颜色配置
+  - 新增 `validateColorConfig` - 验证颜色配置
+
+- **V1 兼容图表元素** (`V1CompatibleChartElement`)
+  - 支持 `themeColor` (单数) 向后兼容别名
+  - 标准使用 `themeColors` (复数)
+
+### 🔧 优化
+
+- **V1ColorConfig 重构**
+  - 从联合类型改为扁平化单一接口
+  - 移除 `V1StandardColorConfig` 和 `V1ProjectColorConfig`
+  - 所有字段改为可选（除 `color` 必需）
+  - 解决类型兼容性问题
+
+### 📚 文档
+
+- 为所有新增类型和函数添加完整的 JSDoc 注释
+- 添加使用示例和代码片段
+- 更新导出路径和模块说明
+
+### ⚠️ 破坏性变更
+
+无。此版本完全向后兼容 v2.2.1。
+
+### 🐛 修复
+
+- 修复 `V1ColorConfig` 类型不兼容导致的大量类型错误
+- 修复扩展属性访问时的类型推断问题
+- 修复 Chart 元素 `themeColor` 字段名不一致问题
+
+### 📊 影响
+
+此版本优化预计可解决 frontend-new-ppt 项目中：
+- 197 个 TS2339 错误（扩展属性访问）
+- 108 个 TS2322/TS2345 错误（V1ColorConfig 兼容性）
+- 17 个 TS2551 错误（Chart themeColor 字段）
+- 总计约 422 个错误（93% 的类型错误）
+
 ## [2.2.1] - 2025-10-09
 
 ### Fixed
@@ -174,6 +228,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Proper package.json configuration
   - License: MIT
 
+[2.3.0]: https://github.com/Xeonice/ppteditor-types/compare/v2.2.1...v2.3.0
 [2.2.1]: https://github.com/Xeonice/ppteditor-types/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/Xeonice/ppteditor-types/compare/v2.1.1...v2.2.0
 [2.1.1]: https://github.com/Xeonice/ppteditor-types/compare/v2.1.0...v2.1.1

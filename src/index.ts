@@ -15,34 +15,6 @@ export * from './extensions/index.js';
 // V2 Version Information
 export { V2_VERSION, V2_SCHEMA_VERSION, V2_FEATURES } from './types/v2-standard-types.js';
 
-// ===== V1 Compatibility Types =====
-// Base V1 Types
-export type {
-  V1ColorConfig,
-  V1StandardColorConfig,
-  V1ProjectColorConfig,
-  ThemeColorType
-} from './types/v1-compat-types.js';
-
-// V1 Style Types
-export type {
-  V1ShapeGradient,
-  V1PPTElementShadow,
-  V1PPTElementOutline
-} from './types/v1-compat-types.js';
-
-// V1 Element Types
-export type {
-  V1CompatiblePPTElement,
-  V1CompatibleTextElement,
-  V1CompatibleShapeElement,
-  V1CompatibleImageElement,
-  V1CompatibleLineElement,
-  V1PPTNoneElement,
-  V1PPTTextElement,
-  V1PPTTextElementApi
-} from './types/v1-compat-types.js';
-
 // ===== 版本适配器导出 =====
 export {
   V1ToV2Adapter,
@@ -138,7 +110,54 @@ export { ConverterModule as Converters };
 export { MiddlewareModule as Middleware };
 export { ExtensionsModule as Extensions };
 
+// ============ V1 兼容类型和工具（完整导出）============
+
+// V1 兼容元素类型
+export type {
+  V1ColorConfig,
+  V1ShapeGradient,
+  V1PPTElementShadow,
+  V1PPTElementOutline,
+  V1PPTBaseElementExtension,
+  V1CompatibleBaseElement,
+  V1CompatibleTextElement,
+  V1CompatibleShapeElement,
+  V1CompatibleImageElement,
+  V1CompatibleLineElement,
+  V1CompatibleChartElement,
+  V1PPTNoneElement,
+  V1CompatiblePPTElement,
+  V1PPTElement
+} from './types/v1-compat-types.js';
+
+// 扩展属性类型和工具
+export type {
+  PPTElementExtension,
+  WithExtension
+} from './extensions/element-extensions.js';
+
+export {
+  hasTag,
+  hasIndex,
+  hasFrom,
+  hasIsDefault,
+  hasExtensions
+} from './extensions/element-extensions.js';
+
+// 颜色配置工具
+export {
+  stringToColorConfig,
+  colorConfigToString,
+  createThemeColorConfig,
+  isThemeColor,
+  mergeColorConfig,
+  validateColorConfig as validateColorConfigUtil
+} from './utils/color-helpers.js';
+
+// 主题色类型（从项目扩展导入）
+export type { ThemeColorType } from './extensions/project-extended.js';
+
 // ===== 版本信息导出 =====
-export const PPTEDITOR_TYPES_VERSION = '2.2.0';
+export const PPTEDITOR_TYPES_VERSION = '2.3.0';
 export const SCHEMA_VERSION = 2;
 export const SUPPORTS_V1_COMPATIBILITY = true;
