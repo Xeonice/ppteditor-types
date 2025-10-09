@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.1] - 2025-10-09
+
+### Fixed
+- **Type Definition Corrections**
+  - Fixed `ColorConfig.colorType` field to use `ThemeColorType` instead of `ColorType` in `src/extensions/project-extended.ts`
+  - Fixed `V1ProjectColorConfig.colorType` field to use `ThemeColorType` instead of `string` in `src/types/v1-compat-types.ts`
+  - Updated runtime validation for `colorType` to correctly validate against `ThemeColorType` enum values
+- **Enhanced Theme Color Support**
+  - Added missing theme color types: `dk1`, `dk2`, `lt1`, `lt2` to `ThemeColorType` enum
+  - These are the most commonly used theme colors in Office PPT (dark colors for text, light colors for backgrounds)
+  - Added comprehensive documentation explaining Office Open XML color scheme structure
+
+### Changed
+- **Type System Improvements**
+  - `ThemeColorType` now includes all 10 Office theme color types (6 accents + 4 dark/light colors)
+  - `ColorConfig.colorType` now correctly represents theme color types rather than color format types
+  - Updated JSDoc examples to demonstrate both full and simplified theme color configurations
+  - `v1-compat-types.ts` now imports and re-exports `ThemeColorType` from `project-extended.ts` for consistency
+
+### Documentation
+- Enhanced inline documentation for `ThemeColorType` with Office Open XML reference
+- Clarified the difference between `colorType` (simplified) and `themeColor.type` (full object) usage patterns
+
 ## [2.2.0] - 2025-10-09
 
 ### Added
@@ -151,6 +174,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Proper package.json configuration
   - License: MIT
 
+[2.2.1]: https://github.com/Xeonice/ppteditor-types/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/Xeonice/ppteditor-types/compare/v2.1.1...v2.2.0
 [2.1.1]: https://github.com/Xeonice/ppteditor-types/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/Xeonice/ppteditor-types/compare/v1.0.0...v2.1.0

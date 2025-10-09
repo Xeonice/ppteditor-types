@@ -37,7 +37,7 @@ describe('ProjectExtended Types', () => {
     it('should accept all valid theme color types', () => {
       const types: ThemeColorType[] = [
         'accent1', 'accent2', 'accent3', 'accent4', 'accent5', 'accent6',
-        'text1', 'text2', 'background1', 'background2'
+        'dk1', 'dk2', 'lt1', 'lt2'
       ]
       expect(types.length).toBe(10)
     })
@@ -68,10 +68,10 @@ describe('ProjectExtended Types', () => {
         color: '#FF0000',
         themeColor: {
           color: '#FF0000',
-          type: 'background1' as ThemeColorType
+          type: 'lt1' as ThemeColorType
         }
       }
-      expect(color.themeColor?.type).toBe('background1')
+      expect(color.themeColor?.type).toBe('lt1')
     })
   })
 
@@ -599,17 +599,18 @@ describe('ProjectExtended Types', () => {
     })
 
     describe('ColorConfig colorType validation', () => {
-      it('should accept valid colorType values', () => {
-        expect(validateColorConfig({ color: '#FF0000', colorType: 'theme' })).toBe(true)
-        expect(validateColorConfig({ color: '#FF0000', colorType: 'rgb' })).toBe(true)
-        expect(validateColorConfig({ color: '#FF0000', colorType: 'hsl' })).toBe(true)
-        expect(validateColorConfig({ color: '#FF0000', colorType: 'hex' })).toBe(true)
-        expect(validateColorConfig({ color: '#FF0000', colorType: 'custom' })).toBe(true)
+      it('should accept valid colorType values (ThemeColorType)', () => {
+        expect(validateColorConfig({ color: '#FF0000', colorType: 'accent1' })).toBe(true)
+        expect(validateColorConfig({ color: '#FF0000', colorType: 'accent2' })).toBe(true)
+        expect(validateColorConfig({ color: '#FF0000', colorType: 'dk1' })).toBe(true)
+        expect(validateColorConfig({ color: '#FF0000', colorType: 'dk2' })).toBe(true)
+        expect(validateColorConfig({ color: '#FF0000', colorType: 'lt1' })).toBe(true)
       })
 
       it('should reject invalid colorType values', () => {
         expect(validateColorConfig({ color: '#FF0000', colorType: 'invalid' })).toBe(false)
-        expect(validateColorConfig({ color: '#FF0000', colorType: 'RGB' })).toBe(false)
+        expect(validateColorConfig({ color: '#FF0000', colorType: 'theme' })).toBe(false)
+        expect(validateColorConfig({ color: '#FF0000', colorType: 'rgb' })).toBe(false)
         expect(validateColorConfig({ color: '#FF0000', colorType: '' })).toBe(false)
       })
     })
@@ -738,7 +739,7 @@ describe('ProjectExtended Types', () => {
             color: '#FF0000',
             type: 'accent1'
           },
-          colorType: 'theme',
+          colorType: 'accent1',
           colorIndex: 5,
           opacity: 0.8
         }

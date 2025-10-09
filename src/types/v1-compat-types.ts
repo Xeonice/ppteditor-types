@@ -4,8 +4,9 @@
  * 根据 v1-type-compatibility-adaptations.md 优化
  */
 
-// 导入项目特有的主题颜色类型（如果需要）
-export type ThemeColorType = string; // 项目特定的主题颜色类型
+// 导入并重新导出项目扩展的主题颜色类型
+import type { ThemeColorType } from '../extensions/project-extended.js'
+export type { ThemeColorType }
 
 // V1标准颜色配置 - 严格符合V1规范
 export interface V1StandardColorConfig {
