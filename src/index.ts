@@ -9,6 +9,9 @@ export * from './elements/index.js';
 export * from './animation/index.js';
 export * from './slide/index.js';
 
+// ===== Project Extensions =====
+export * from './extensions/index.js';
+
 // V2 Version Information
 export { V2_VERSION, V2_SCHEMA_VERSION, V2_FEATURES } from './types/v2-standard-types.js';
 
@@ -92,6 +95,9 @@ import * as UnifiedModule from './types/unified-types.js';
 import * as ConverterModule from './utils/version-converter.js';
 import * as MiddlewareModule from './middleware/version-middleware.js';
 
+// Project Extensions
+import * as ExtensionsModule from './extensions/index.js';
+
 // Group V2 Standard Types
 export const V2Types = {
   Base: BaseModule,
@@ -115,6 +121,9 @@ export const Utils = {
   Middleware: MiddlewareModule
 };
 
+// Group Project Extensions
+export const ProjectExtensions = ExtensionsModule;
+
 // Legacy namespace exports (for backward compatibility)
 export { BaseModule as Base };
 export { EnumsModule as Enums };
@@ -127,6 +136,7 @@ export { AdaptersModule as Adapters };
 export { UnifiedModule as Unified };
 export { ConverterModule as Converters };
 export { MiddlewareModule as Middleware };
+export { ExtensionsModule as Extensions };
 
 // ===== 版本信息导出 =====
 export const PPTEDITOR_TYPES_VERSION = '2.0.0';
