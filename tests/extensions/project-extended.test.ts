@@ -16,7 +16,12 @@ import type {
   AIImageStatus,
   ThemeColorType
 } from '../../src/extensions/project-extended.js'
-import { isProjectSlideList } from '../../src/extensions/project-extended.js'
+import {
+  isProjectSlideList,
+  validateProjectSlide,
+  validateColorConfig,
+  validateProjectSlideBackground
+} from '../../src/extensions/project-extended.js'
 import type { Slide } from '../../src/slide/slide.js'
 import type { PPTElement } from '../../src/elements/index.js'
 
@@ -348,6 +353,232 @@ describe('ProjectExtended Types', () => {
 
       expect(listSlides.length).toBe(1)
       expect(listSlides[0].payType).toBe('free')
+    })
+  })
+
+  describe('Discriminated Union - ProjectSlideBackground', () => {
+    it('should enforce required fields for solid background', () => {
+      const solidBg: ProjectSlideBackground = {
+        type: 'solid',
+        themeColor: { color: '#FFFFFF' }
+      }
+
+      expect(solidBg.type).toBe('solid')
+      expect(solidBg.themeColor.color).toBe('#FFFFFF')
+    })
+
+    it('should enforce required fields for image background', () => {
+      const imageBg: ProjectSlideBackground = {
+        type: 'image',
+        image: 'https://example.com/bg.jpg',
+        imageSize: 'cover'
+      }
+
+      expect(imageBg.type).toBe('image')
+      expect(imageBg.image).toBe('https://example.com/bg.jpg')
+    })
+
+    it('should enforce required fields for gradient background', () => {
+      const gradientBg: ProjectSlideBackground = {
+        type: 'gradient',
+        gradientType: 'linear',
+        gradientColor: [
+          { color: '#FF0000' },
+          { color: '#0000FF' }
+        ],
+        gradientRotate: 90
+      }
+
+      expect(gradientBg.type).toBe('gradient')
+      expect(gradientBg.gradientColor.length).toBe(2)
+    })
+
+    it('should support type narrowing with switch statement', () => {
+      const backgrounds: ProjectSlideBackground[] = [
+        { type: 'solid', themeColor: { color: '#FFF' } },
+        { type: 'image', image: 'url', imageSize: 'cover' },
+        { type: 'gradient', gradientType: 'linear', gradientColor: [{ color: '#F00' }, { color: '#00F' }] }
+      ]
+
+      backgrounds.forEach(bg => {
+        switch (bg.type) {
+          case 'solid':
+            expect(bg.themeColor).toBeDefined()
+            break
+          case 'image':
+            expect(bg.image).toBeDefined()
+            break
+          case 'gradient':
+            expect(bg.gradientType).toBeDefined()
+            expect(bg.gradientColor).toHaveLength(2)
+            break
+        }
+      })
+    })
+  })
+
+  describe('Runtime Validation Functions', () => {
+    describe('validateColorConfig', () => {
+      it('should validate valid color config', () => {
+        const validColor = {
+          color: '#FF0000',
+          opacity: 0.8
+        }
+
+        expect(validateColorConfig(validColor)).toBe(true)
+      })
+
+      it('should validate color with theme color', () => {
+        const validColor = {
+          color: '#FF0000',
+          themeColor: {
+            color: '#FF0000',
+            type: 'accent1'
+          }
+        }
+
+        expect(validateColorConfig(validColor)).toBe(true)
+      })
+
+      it('should reject invalid color config', () => {
+        expect(validateColorConfig(null)).toBe(false)
+        expect(validateColorConfig(undefined)).toBe(false)
+        expect(validateColorConfig('string')).toBe(false)
+        expect(validateColorConfig({})).toBe(false)
+        expect(validateColorConfig({ opacity: 0.5 })).toBe(false)
+      })
+    })
+
+    describe('validateProjectSlideBackground', () => {
+      it('should validate solid background', () => {
+        const solidBg = {
+          type: 'solid',
+          themeColor: { color: '#FFFFFF' }
+        }
+
+        expect(validateProjectSlideBackground(solidBg)).toBe(true)
+      })
+
+      it('should validate image background', () => {
+        const imageBg = {
+          type: 'image',
+          image: 'https://example.com/bg.jpg',
+          imageSize: 'cover'
+        }
+
+        expect(validateProjectSlideBackground(imageBg)).toBe(true)
+      })
+
+      it('should validate gradient background', () => {
+        const gradientBg = {
+          type: 'gradient',
+          gradientType: 'linear',
+          gradientColor: [
+            { color: '#FF0000' },
+            { color: '#0000FF' }
+          ],
+          gradientRotate: 90
+        }
+
+        expect(validateProjectSlideBackground(gradientBg)).toBe(true)
+      })
+
+      it('should reject invalid backgrounds', () => {
+        expect(validateProjectSlideBackground(null)).toBe(false)
+        expect(validateProjectSlideBackground({ type: 'invalid' })).toBe(false)
+        expect(validateProjectSlideBackground({ type: 'solid' })).toBe(false) // missing themeColor
+        expect(validateProjectSlideBackground({ type: 'image' })).toBe(false) // missing image
+        expect(validateProjectSlideBackground({ type: 'gradient' })).toBe(false) // missing required fields
+      })
+
+      it('should validate gradient with exactly 2 colors', () => {
+        const invalidGradient = {
+          type: 'gradient',
+          gradientType: 'linear',
+          gradientColor: [{ color: '#FF0000' }] // Only 1 color
+        }
+
+        expect(validateProjectSlideBackground(invalidGradient)).toBe(false)
+      })
+    })
+
+    describe('validateProjectSlide', () => {
+      it('should validate regular slide', () => {
+        const validSlide = {
+          id: 'slide-1',
+          elements: [],
+          tag: 'content',
+          pageId: 'page-1'
+        }
+
+        expect(validateProjectSlide(validSlide)).toBe(true)
+      })
+
+      it('should validate list slide', () => {
+        const validListSlide = {
+          id: 'slide-1',
+          elements: [],
+          tag: 'list',
+          payType: 'free',
+          listFlag: 'list-1',
+          autoFill: true
+        }
+
+        expect(validateProjectSlide(validListSlide)).toBe(true)
+      })
+
+      it('should reject invalid slides', () => {
+        expect(validateProjectSlide(null)).toBe(false)
+        expect(validateProjectSlide({})).toBe(false)
+        expect(validateProjectSlide({ id: 'test' })).toBe(false) // missing elements
+        expect(validateProjectSlide({ elements: [] })).toBe(false) // missing id
+      })
+
+      it('should reject list slide missing required fields', () => {
+        const invalidListSlide = {
+          id: 'slide-1',
+          elements: [],
+          tag: 'list'
+          // missing payType, listFlag, autoFill
+        }
+
+        expect(validateProjectSlide(invalidListSlide)).toBe(false)
+      })
+
+      it('should validate slide with background', () => {
+        const slideWithBg = {
+          id: 'slide-1',
+          elements: [],
+          background: {
+            type: 'solid',
+            themeColor: { color: '#FFF' }
+          }
+        }
+
+        expect(validateProjectSlide(slideWithBg)).toBe(true)
+      })
+
+      it('should handle API response validation', () => {
+        // Simulate API response
+        const apiResponse = JSON.parse(JSON.stringify({
+          id: 'api-slide-1',
+          elements: [
+            {
+              type: 'text',
+              id: 'text-1',
+              left: 0,
+              top: 0,
+              width: 100,
+              height: 50
+            }
+          ],
+          tag: 'content',
+          aiImage: true,
+          aiImageStatus: 'success'
+        }))
+
+        expect(validateProjectSlide(apiResponse)).toBe(true)
+      })
     })
   })
 })

@@ -550,23 +550,260 @@ const presentation: ProjectSlide[] = [
 - [项目扩展类型源码](./src/extensions/project-extended.ts)
 - [测试用例](./tests/extensions/project-extended.test.ts)
 
+## 迁移指南
+
+### 从标准 Slide 迁移到 ProjectSlide
+
+如果你的项目正在使用标准 `Slide` 类型，以下指南帮助你迁移到 `ProjectSlide`。
+
+#### 1. 背景结构变化
+
+**纯色背景**
+```typescript
+// ❌ 标准库（旧）
+background: {
+  type: 'solid',
+  color: '#FFFFFF'
+}
+
+// ✅ 项目扩展（新）
+background: {
+  type: 'solid',
+  themeColor: {
+    color: '#FFFFFF'
+  }
+}
+```
+
+**图片背景**
+```typescript
+// ❌ 标准库（旧）
+background: {
+  type: 'image',
+  image: {
+    src: 'https://example.com/bg.jpg',
+    size: 'cover'
+  }
+}
+
+// ✅ 项目扩展（新）
+background: {
+  type: 'image',
+  image: 'https://example.com/bg.jpg',
+  imageSize: 'cover'
+}
+```
+
+**渐变背景**
+```typescript
+// ❌ 标准库（旧）
+background: {
+  type: 'gradient',
+  gradient: {
+    type: 'linear',
+    colors: [
+      { pos: 0, color: '#FF0000' },
+      { pos: 100, color: '#0000FF' }
+    ],
+    rotate: 90
+  }
+}
+
+// ✅ 项目扩展（新）
+background: {
+  type: 'gradient',
+  gradientType: 'linear',
+  gradientColor: [
+    { color: '#FF0000' },
+    { color: '#0000FF' }
+  ],
+  gradientRotate: 90
+}
+```
+
+#### 2. 页面类型字段
+
+```typescript
+// ❌ 标准库（旧）
+type?: SlideType  // 'cover' | 'contents' | 'transition' | 'content' | 'end'
+
+// ✅ 项目扩展（新）
+tag?: PageTag  // 'title' | 'catalogue' | 'chapter' | 'content' | 'end' | 'list'
+```
+
+#### 3. 新增项目特有字段
+
+```typescript
+// 项目扩展新增字段
+{
+  pageId?: string           // 业务页面ID
+  aiImage?: boolean         // AI图片标记
+  aiImageStatus?: AIImageStatus  // AI图片状态
+  listCount?: number        // 列表项数量
+  fillPageType?: number     // 填充类型
+}
+```
+
+#### 4. 运行时验证（处理外部数据）
+
+```typescript
+import { validateProjectSlide } from '@douglasdong/ppteditor-types'
+
+// 验证 API 响应
+const response = await fetch('/api/slides').then(r => r.json())
+
+if (validateProjectSlide(response)) {
+  // 类型安全：response 现在是 ProjectSlide
+  processSlide(response)
+} else {
+  console.error('Invalid slide data from API')
+}
+```
+
+#### 5. 批量迁移工具函数
+
+```typescript
+import type { Slide, ProjectSlide, ColorConfig } from '@douglasdong/ppteditor-types'
+
+// 转换函数示例
+function migrateSlideToProject(standardSlide: Slide): ProjectSlide {
+  const { background, ...rest } = standardSlide
+
+  // 转换背景
+  let projectBackground: ProjectSlideBackground | undefined
+  if (background) {
+    if (background.type === 'solid') {
+      projectBackground = {
+        type: 'solid',
+        themeColor: { color: background.color || '#FFFFFF' }
+      }
+    } else if (background.type === 'image' && background.image) {
+      projectBackground = {
+        type: 'image',
+        image: background.image.src,
+        imageSize: background.image.size
+      }
+    } else if (background.type === 'gradient' && background.gradient) {
+      const colors = background.gradient.colors
+      projectBackground = {
+        type: 'gradient',
+        gradientType: background.gradient.type,
+        gradientColor: [
+          { color: colors[0]?.color || '#FF0000' },
+          { color: colors[colors.length - 1]?.color || '#0000FF' }
+        ],
+        gradientRotate: background.gradient.rotate
+      }
+    }
+  }
+
+  return {
+    ...rest,
+    background: projectBackground
+  }
+}
+```
+
+### 判别联合类型的好处
+
+v2.2.0+ 版本将 `ProjectSlideBackground` 改为判别联合类型，提供更强的类型安全：
+
+```typescript
+// ✅ 类型安全：TypeScript 会根据 type 进行类型缩窄
+function renderBackground(bg: ProjectSlideBackground) {
+  switch (bg.type) {
+    case 'solid':
+      // bg 自动缩窄为 ProjectSolidBackground
+      // themeColor 是必需的，TypeScript 会确保它存在
+      applyColor(bg.themeColor)
+      break
+
+    case 'image':
+      // bg 自动缩窄为 ProjectImageBackground
+      // image 是必需的
+      loadImage(bg.image)
+      break
+
+    case 'gradient':
+      // bg 自动缩窄为 ProjectGradientBackground
+      // gradientType 和 gradientColor 是必需的
+      applyGradient(bg.gradientType, bg.gradientColor)
+      break
+  }
+}
+
+// ❌ 编译错误：不能创建无效组合
+const invalid: ProjectSlideBackground = {
+  type: 'solid'
+  // 错误：缺少必需的 themeColor
+}
+
+const invalid2: ProjectSlideBackground = {
+  type: 'solid',
+  themeColor: { color: '#FFF' },
+  image: 'url'  // 错误：solid 类型不能有 image 属性
+}
+```
+
 ## 常见问题
 
 ### Q: 项目扩展类型可以和标准类型混用吗？
 
-A: 可以。项目扩展类型继承自标准类型，所有标准字段都是兼容的。但是 `background` 字段的结构不同，不能直接互换。
+A: 可以。项目扩展类型继承自标准类型，所有标准字段都是兼容的。但是 `background` 字段的结构不同，需要使用迁移函数转换。
 
 ### Q: 如何处理列表页的类型区分？
 
-A: 使用类型守卫或检查 `tag === 'list'` 并配合 `'payType' in slide` 来区分列表页。
+A: 使用 `isProjectSlideList()` 类型守卫函数：
+```typescript
+import { isProjectSlideList } from '@douglasdong/ppteditor-types'
+
+if (isProjectSlideList(slide)) {
+  // TypeScript 自动缩窄类型
+  console.log(slide.payType, slide.listFlag)
+}
+```
 
 ### Q: ColorConfig 和简单的 string 颜色有什么区别？
 
-A: ColorConfig 支持主题色系统，可以关联到主题色并支持不透明度等高级特性，而简单的 string 只能表示纯颜色值。
+A: ColorConfig 支持主题色系统，可以关联到主题色并支持不透明度等高级特性，而简单的 string 只能表示纯颜色值。主题色类型现在是类型安全的（`ThemeColorType`）。
 
 ### Q: 为什么渐变色只支持双色？
 
 A: 这是项目实现的业务限制。标准库支持多色渐变，但项目扩展类型为了简化实现只支持双色渐变。
+
+### Q: 如何验证外部数据（API 响应）？
+
+A: 使用运行时验证函数：
+```typescript
+import {
+  validateProjectSlide,
+  validateColorConfig,
+  validateProjectSlideBackground
+} from '@douglasdong/ppteditor-types'
+
+// 验证整个幻灯片
+if (validateProjectSlide(apiData)) {
+  processSlide(apiData)
+}
+
+// 验证颜色配置
+if (validateColorConfig(colorData)) {
+  applyColor(colorData)
+}
+
+// 验证背景
+if (validateProjectSlideBackground(bgData)) {
+  applyBackground(bgData)
+}
+```
+
+### Q: 判别联合类型的优势是什么？
+
+A: 判别联合类型提供：
+- ✅ 编译时防止无效属性组合
+- ✅ 自动类型缩窄（无需手动类型断言）
+- ✅ 更好的 IntelliSense 提示
+- ✅ 明确的必需字段要求
 
 ## 反馈与贡献
 
