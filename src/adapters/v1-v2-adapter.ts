@@ -45,7 +45,13 @@ export class V1ToV2Adapter {
   static convertColor = memoize((v1Color: V1ColorConfig | undefined | null): string => {
     // Add null safety checks
     if (!v1Color) return '#000000';
-    return v1Color.color || v1Color.themeColor || '#000000';
+    // ColorConfig.themeColor 现在是对象类型，提取 color 字段
+    const themeColorValue = typeof v1Color.themeColor === 'object' && v1Color.themeColor
+      ? v1Color.themeColor.color
+      : typeof v1Color.themeColor === 'string'
+      ? v1Color.themeColor
+      : undefined;
+    return v1Color.color || themeColorValue || '#000000';
   })
 
   /**
@@ -229,11 +235,12 @@ export class V1ToV2Adapter {
 export class V2ToV1Adapter {
   /**
    * 颜色转换：V2 string → V1ColorConfig
+   * V1ColorConfig 现在使用项目的 ColorConfig，themeColor 不再需要
    */
   static convertColor = memoize((v2Color: string): V1ColorConfig => {
     return {
-      color: v2Color,
-      themeColor: v2Color
+      color: v2Color
+      // themeColor 字段现在是可选的对象类型，简单转换时不需要设置
     };
   })
 

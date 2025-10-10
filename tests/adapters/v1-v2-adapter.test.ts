@@ -22,18 +22,16 @@ describe('V1ToV2Adapter', () => {
   describe('convertColor', () => {
     it('should convert V1ColorConfig to V2 string', () => {
       const v1Color: V1ColorConfig = {
-        color: '#ff0000',
-        themeColor: '#ff0000'
+        color: '#ff0000'
       };
 
       const result = V1ToV2Adapter.convertColor(v1Color);
       expect(result).toBe('#ff0000');
     });
 
-    it('should use themeColor as fallback', () => {
+    it('should use color from ColorConfig', () => {
       const v1Color: V1ColorConfig = {
-        color: '',
-        themeColor: '#00ff00'
+        color: '#00ff00'
       };
 
       const result = V1ToV2Adapter.convertColor(v1Color);
@@ -47,7 +45,7 @@ describe('V1ToV2Adapter', () => {
         h: 10,
         v: 10,
         blur: 5,
-        themeColor: { color: '#333333', themeColor: '#333333' }
+        themeColor: { color: '#333333' }
       };
 
       const result = V1ToV2Adapter.convertShadow(v1Shadow);
@@ -69,7 +67,7 @@ describe('V1ToV2Adapter', () => {
         h: 5,
         v: 5,
         blur: 2,
-        themeColor: { color: '', themeColor: '#999999' } as V1ColorConfig
+        themeColor: { color: '#999999' } as V1ColorConfig
       };
 
       const result = V1ToV2Adapter.convertShadow(v1Shadow);
@@ -82,7 +80,7 @@ describe('V1ToV2Adapter', () => {
       const v1Outline: V1PPTElementOutline = {
         style: 'dashed',
         width: 2,
-        themeColor: { color: '#ff0000', themeColor: '#ff0000' }
+        themeColor: { color: '#ff0000' }
       };
 
       const result = V1ToV2Adapter.convertOutline(v1Outline);
@@ -110,7 +108,7 @@ describe('V1ToV2Adapter', () => {
 
     it('should handle outline with partial fields', () => {
       const v1Outline: V1PPTElementOutline = {
-        themeColor: { color: '#00ff00', themeColor: '#00ff00' }
+        themeColor: { color: '#00ff00' }
       };
 
       const result = V1ToV2Adapter.convertOutline(v1Outline);
@@ -125,8 +123,8 @@ describe('V1ToV2Adapter', () => {
       const v1Gradient: V1ShapeGradient = {
         type: 'linear',
         themeColor: [
-          { color: '#ff0000', themeColor: '#ff0000' },
-          { color: '#0000ff', themeColor: '#0000ff' }
+          { color: '#ff0000' },
+          { color: '#0000ff' }
         ],
         rotate: 45
       };
@@ -155,8 +153,8 @@ describe('V1ToV2Adapter', () => {
         rotate: 0,
         content: 'Hello World',
         defaultFontName: 'Arial',
-        defaultColor: { color: '#000000', themeColor: '#000000' },
-        themeFill: { color: '#ffffff', themeColor: '#ffffff' },
+        defaultColor: { color: '#000000' },
+        themeFill: { color: '#ffffff' },
         fit: 'none',
         enableShrink: true,
         tag: 'test-tag',
@@ -246,8 +244,7 @@ describe('VersionDetector', () => {
         id: 'test',
         type: 'text',
         defaultColor: {
-          color: '#ff0000',
-          themeColor: '#ff0000'
+          color: '#ff0000'
         }
       };
 
@@ -261,8 +258,8 @@ describe('VersionDetector', () => {
         gradient: {
           type: 'linear',
           themeColor: [
-            { color: '#ff0000', themeColor: '#ff0000' },
-            { color: '#0000ff', themeColor: '#0000ff' }
+            { color: '#ff0000' },
+            { color: '#0000ff' }
           ]
         }
       };
@@ -328,7 +325,7 @@ describe('AutoAdapter', () => {
         rotate: 0,
         content: 'test',
         defaultFontName: 'Arial',
-        defaultColor: { color: '#000000', themeColor: '#000000' },
+        defaultColor: { color: '#000000' },
         tag: 'test-tag'
       };
 
@@ -366,7 +363,7 @@ describe('AutoAdapter', () => {
           left: 0, top: 0, width: 100, height: 50, rotate: 0,
           content: 'test1',
           defaultFontName: 'Arial',
-          defaultColor: { color: '#000000', themeColor: '#000000' },
+          defaultColor: { color: '#000000' },
           tag: 'v1-element'
         },
         {

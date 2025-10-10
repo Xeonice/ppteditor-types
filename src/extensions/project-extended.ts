@@ -33,7 +33,13 @@ export type TemplatePayType = 'free' | 'not_free'
 /**
  * AI 图片生成状态
  */
-export type AIImageStatus = 'pending' | 'success' | 'failed'
+export type AIImageStatus =
+  | 'pending'       // 等待中
+  | 'building'      // 构建中
+  | 'done'          // 完成
+  | 'success'       // 成功
+  | 'failed'        // 失败
+  | 'build_failed'  // 构建失败
 
 /**
  * 主题色类型

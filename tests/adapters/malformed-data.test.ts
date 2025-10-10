@@ -135,7 +135,7 @@ describe('Malformed V1 Data Handling', () => {
         viewBox: [0, 0],
         path: { d: 'M0,0 L100,100' } as any, // Non-string path
         fixedRatio: false,
-        themeFill: { color: '#ff0000', themeColor: '#ff0000' }
+        themeFill: { color: '#ff0000' }
       };
 
       const result = V1ToV2Adapter.convertShapeElement(v1Element);
@@ -207,7 +207,7 @@ describe('Malformed V1 Data Handling', () => {
           left: 0, top: 0, width: 100, height: 50, rotate: 0,
           content: 'test',
           defaultFontName: 'Arial',
-          defaultColor: { color: '#000000', themeColor: '#000000' }
+          defaultColor: { color: '#000000' }
         },
         {
           id: 'none-1',
@@ -297,7 +297,7 @@ describe('Malformed V1 Data Handling', () => {
           left: 0, top: 0, width: 100, height: 50, rotate: 0,
           content: 'test',
           defaultFontName: 'Arial',
-          defaultColor: { color: '#000000', themeColor: '#000000' },
+          defaultColor: { color: '#000000' },
           tag: 'v1'
         },
         null,
@@ -317,7 +317,7 @@ describe('Malformed V1 Data Handling', () => {
 
   describe('Performance - Memoization', () => {
     it('should return same reference for repeated color conversion', () => {
-      const color = { color: '#ff0000', themeColor: '#ff0000' };
+      const color = { color: '#ff0000' };
       const result1 = V1ToV2Adapter.convertColor(color);
       const result2 = V1ToV2Adapter.convertColor(color);
 
@@ -336,7 +336,7 @@ describe('Malformed V1 Data Handling', () => {
         rotate: 0,
         content: 'Hello World',
         defaultFontName: 'Arial',
-        defaultColor: { color: '#000000', themeColor: '#000000' },
+        defaultColor: { color: '#000000' },
         fit: 'none'
       };
 

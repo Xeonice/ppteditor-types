@@ -22,3 +22,16 @@ export enum ShapePathFormulasKeys {
   BULLET = 'bullet',
   INDICATOR = 'indicator',
 }
+
+/**
+ * 形状路径公式值类型
+ *
+ * 表示所有 ShapePathFormulasKeys 枚举的值
+ *
+ * @example
+ * ```typescript
+ * const formula: ShapePathFormulaValue = 'roundRect'; // ✓
+ * const formula2: ShapePathFormulaValue = 'invalid'; // ✗ 错误
+ * ```
+ */
+export type ShapePathFormulaValue = `${ShapePathFormulasKeys}`;

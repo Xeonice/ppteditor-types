@@ -88,9 +88,13 @@ export function createThemeColorConfig(
     config.opacity = opacity;
   }
 
-  // 向后兼容：同时设置 themeColor 字段
+  // V1ColorConfig 现在使用项目的 ColorConfig
+  // themeColor 字段是可选的对象类型：{ color: string; type: ThemeColorType }
   if (colorType) {
-    config.themeColor = colorType;
+    config.themeColor = {
+      color,
+      type: colorType
+    };
   }
 
   return config;

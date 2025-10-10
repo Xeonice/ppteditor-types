@@ -20,7 +20,7 @@ describe('UnifiedPPTElement', () => {
     rotate: 0,
     content: 'Hello',
     defaultFontName: 'Arial',
-    defaultColor: { color: '#000000', themeColor: '#000000' },
+    defaultColor: { color: '#000000' },
     fit: 'none' as const,
     tag: 'v1-tag'
   };
@@ -165,7 +165,7 @@ describe('UnifiedPPTElementCollection', () => {
       left: 0, top: 0, width: 100, height: 50, rotate: 0,
       content: 'test1',
       defaultFontName: 'Arial',
-      defaultColor: { color: '#000000', themeColor: '#000000' },
+      defaultColor: { color: '#000000' },
       fit: 'none' as const,
       tag: 'v1'
     },
@@ -185,7 +185,7 @@ describe('UnifiedPPTElementCollection', () => {
       viewBox: [0, 0] as [number, number],
       path: 'M0,0 L100,100',
       fixedRatio: false,
-      themeFill: { color: '#00ff00', themeColor: '#00ff00' }
+      themeFill: { color: '#00ff00' }
     }
   ];
 
@@ -326,7 +326,7 @@ describe('VersionConversionUtils', () => {
       left: 0, top: 0, width: 100, height: 50, rotate: 0,
       content: 'v1 text',
       defaultFontName: 'Arial',
-      defaultColor: { color: '#000000', themeColor: '#000000' },
+      defaultColor: { color: '#000000' },
       fit: 'none' as const,
       tag: 'v1'
     },
