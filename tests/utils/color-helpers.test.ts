@@ -3,7 +3,12 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { createThemeColorConfig, validateColorConfig } from '../../src/utils/color-helpers.js';
+import {
+  createThemeColorConfig,
+  validateColorConfig,
+  isThemeColorObject,
+  migrateColorConfig
+} from '../../src/utils/color-helpers.js';
 
 describe('Color Helpers', () => {
   describe('createThemeColorConfig', () => {
@@ -130,6 +135,137 @@ describe('Color Helpers', () => {
           type: 'accent1'
         }
       })).toBe(false);
+    });
+  });
+
+  describe('isThemeColorObject', () => {
+    it('should return true for valid theme color objects', () => {
+      expect(isThemeColorObject({
+        color: '#ff0000',
+        type: 'accent1'
+      })).toBe(true);
+    });
+
+    it('should return false for string values', () => {
+      expect(isThemeColorObject('#ff0000')).toBe(false);
+    });
+
+    it('should return false for null/undefined', () => {
+      expect(isThemeColorObject(null)).toBe(false);
+      expect(isThemeColorObject(undefined)).toBe(false);
+    });
+
+    it('should return false for objects missing required fields', () => {
+      expect(isThemeColorObject({ color: '#ff0000' })).toBe(false);
+      expect(isThemeColorObject({ type: 'accent1' })).toBe(false);
+      expect(isThemeColorObject({})).toBe(false);
+    });
+
+    it('should return false for objects with wrong field types', () => {
+      expect(isThemeColorObject({
+        color: 123,
+        type: 'accent1'
+      })).toBe(false);
+      expect(isThemeColorObject({
+        color: '#ff0000',
+        type: true
+      })).toBe(false);
+    });
+  });
+
+  describe('migrateColorConfig', () => {
+    it('should migrate legacy string themeColor to new object format', () => {
+      const oldConfig = {
+        color: '#ff0000',
+        themeColor: '#00ff00',  // Legacy string format
+        colorType: 'accent2'
+      };
+
+      const migrated = migrateColorConfig(oldConfig);
+
+      expect(migrated.color).toBe('#ff0000');
+      expect(migrated.themeColor).toEqual({
+        color: '#00ff00',
+        type: 'accent2'
+      });
+      expect(migrated.colorType).toBe('accent2');
+    });
+
+    it('should use default colorType when not provided for legacy format', () => {
+      const oldConfig = {
+        color: '#ff0000',
+        themeColor: '#00ff00'  // No colorType provided
+      };
+
+      const migrated = migrateColorConfig(oldConfig, 'dk1');
+
+      expect(migrated.themeColor).toEqual({
+        color: '#00ff00',
+        type: 'dk1'
+      });
+      expect(migrated.colorType).toBe('dk1');
+    });
+
+    it('should preserve new format themeColor unchanged', () => {
+      const oldConfig = {
+        color: '#ff0000',
+        themeColor: {
+          color: '#00ff00',
+          type: 'accent3'
+        }
+      };
+
+      const migrated = migrateColorConfig(oldConfig);
+
+      expect(migrated.themeColor).toEqual({
+        color: '#00ff00',
+        type: 'accent3'
+      });
+    });
+
+    it('should preserve all other fields during migration', () => {
+      const oldConfig = {
+        color: '#ff0000',
+        themeColor: '#00ff00',
+        colorType: 'accent1',
+        colorIndex: 2,
+        opacity: 0.7
+      };
+
+      const migrated = migrateColorConfig(oldConfig);
+
+      expect(migrated.colorIndex).toBe(2);
+      expect(migrated.opacity).toBe(0.7);
+    });
+
+    it('should handle configs without themeColor', () => {
+      const oldConfig = {
+        color: '#ff0000',
+        opacity: 0.5
+      };
+
+      const migrated = migrateColorConfig(oldConfig);
+
+      expect(migrated.color).toBe('#ff0000');
+      expect(migrated.opacity).toBe(0.5);
+      expect(migrated.themeColor).toBeUndefined();
+    });
+
+    it('should throw error for invalid config', () => {
+      expect(() => migrateColorConfig(null)).toThrow('Invalid color config for migration');
+      expect(() => migrateColorConfig(undefined)).toThrow('Invalid color config for migration');
+      expect(() => migrateColorConfig('invalid')).toThrow('Invalid color config for migration');
+    });
+
+    it('should provide default color when missing', () => {
+      const oldConfig = {
+        themeColor: '#00ff00',
+        colorType: 'accent1'
+      };
+
+      const migrated = migrateColorConfig(oldConfig);
+
+      expect(migrated.color).toBe('#000000');  // Default color
     });
   });
 });

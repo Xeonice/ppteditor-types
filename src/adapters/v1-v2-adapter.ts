@@ -6,6 +6,7 @@
 import { memoize, memoizeBatch } from '../utils/memoize.js';
 import type {
   V1ColorConfig,
+  V1ColorConfigUnion,
   V1ShapeGradient,
   V1PPTElementShadow,
   V1PPTElementOutline,
@@ -58,11 +59,18 @@ export class V1ToV2Adapter {
    * const color = V1ToV2Adapter.convertColor({ color: '#ff0000', themeColor: '#ff0000' })
    * // Returns: '#ff0000'
    */
-  static convertColor = memoize((v1Color: V1ColorConfig | undefined | null): string => {
+  static convertColor = memoize((v1Color: V1ColorConfigUnion | undefined | null): string => {
     // Add null safety checks
     if (!v1Color) return '#000000';
 
     // Explicit priority: color (if non-empty) > themeColor > default
+    // Design Decision: The 'color' field represents the final computed color value,
+    // while 'themeColor' represents the theme-based color reference. When both exist,
+    // we prioritize 'color' as it represents the user's explicit color choice or
+    // the final computed result from theme processing. This ensures that:
+    // 1. Direct color assignments always take precedence
+    // 2. Theme colors serve as fallbacks when no explicit color is set
+    // 3. Compatibility with existing code that sets color field directly
     if (v1Color.color) return v1Color.color;
 
     // Extract color from themeColor (supports both old string and new object format)
@@ -416,6 +424,15 @@ export class V2ToV1Adapter {
 }
 
 /**
+ * 元素版本枚举
+ */
+export enum ElementVersion {
+  V1 = 'v1',
+  V2 = 'v2',
+  Mixed = 'mixed'
+}
+
+/**
  * 版本检测器
  */
 export class VersionDetector {
@@ -425,24 +442,46 @@ export class VersionDetector {
   static isV1Element(element: any): element is V1CompatiblePPTElement {
     if (!element || typeof element !== 'object') return false;
 
-    // 检查V1特有属性
-    const hasV1Props = 'tag' in element ||
-                       'index' in element ||
-                       'from' in element ||
-                       'isDefault' in element;
+    // 最强的V1指示器：V1特有的扩展属性
+    const hasV1ExtensionProps = 'tag' in element ||
+                                'index' in element ||
+                                'from' in element ||
+                                'isDefault' in element;
 
-    // 检查V1特有颜色格式 - V1ColorConfig 有 color 字段，themeColor 是可选的
-    const hasV1ColorFormat = !!(element.defaultColor &&
-                             typeof element.defaultColor === 'object' &&
-                             'color' in element.defaultColor);
+    if (hasV1ExtensionProps) return true;
 
-    // 检查V1特有渐变格式
+    // 检查V1特有的颜色配置模式
+    // V1 的特征：具有 ColorConfig 结构（有 color 字段的对象），这是 V1 特有的
+    const hasV1ColorConfigPattern = !!(element.defaultColor &&
+                                     typeof element.defaultColor === 'object' &&
+                                     'color' in element.defaultColor &&
+                                     (// 有 V1 特有字段
+                                      'colorType' in element.defaultColor ||
+                                      'colorIndex' in element.defaultColor ||
+                                      'opacity' in element.defaultColor ||
+                                      // 或者有新格式的 themeColor 对象
+                                      ('themeColor' in element.defaultColor &&
+                                       element.defaultColor.themeColor &&
+                                       typeof element.defaultColor.themeColor === 'object' &&
+                                       'type' in element.defaultColor.themeColor) ||
+                                      // 或者仅仅是基础的 ColorConfig 结构（{color: string}）
+                                      (!('colorType' in element.defaultColor) &&
+                                       !('themeColor' in element.defaultColor) &&
+                                       Object.keys(element.defaultColor).length === 1)));
+
+    // 检查V1特有渐变格式：themeColor 是数组
     const hasV1GradientFormat = !!(element.gradient &&
-                               typeof element.gradient === 'object' &&
-                               'themeColor' in element.gradient &&
-                               Array.isArray(element.gradient.themeColor));
+                                 typeof element.gradient === 'object' &&
+                                 'themeColor' in element.gradient &&
+                                 Array.isArray(element.gradient.themeColor) &&
+                                 element.gradient.themeColor.length === 2);
 
-    return hasV1Props || hasV1ColorFormat || hasV1GradientFormat;
+    // 检查V1特有的阴影配置：themeColor 字段存在于 shadow 中
+    const hasV1ShadowFormat = !!(element.shadow &&
+                               typeof element.shadow === 'object' &&
+                               'themeColor' in element.shadow);
+
+    return hasV1ColorConfigPattern || hasV1GradientFormat || hasV1ShadowFormat;
   }
 
   /**
@@ -455,15 +494,15 @@ export class VersionDetector {
   /**
    * 检测元素数组的版本
    */
-  static detectElementsVersion(elements: any[]): 'v1' | 'v2' | 'mixed' {
-    if (elements.length === 0) return 'v2'; // 默认V2
+  static detectElementsVersion(elements: any[]): ElementVersion {
+    if (elements.length === 0) return ElementVersion.V2; // 默认V2
 
     const v1Count = elements.filter(el => this.isV1Element(el)).length;
     const v2Count = elements.length - v1Count;
 
-    if (v1Count === 0) return 'v2';
-    if (v2Count === 0) return 'v1';
-    return 'mixed';
+    if (v1Count === 0) return ElementVersion.V2;
+    if (v2Count === 0) return ElementVersion.V1;
+    return ElementVersion.Mixed;
   }
 }
 

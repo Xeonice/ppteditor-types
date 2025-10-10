@@ -49,10 +49,32 @@ export function colorConfigToString(config: V1ColorConfig): string {
 }
 
 /**
+ * 创建基础颜色配置（不包含主题色）
+ * @param color - 颜色值
+ * @returns 基础颜色配置
+ */
+export function createThemeColorConfig(color: string): V1ColorConfig;
+
+/**
+ * 创建带主题色的颜色配置
+ * @param color - 颜色值
+ * @param colorType - 主题色类型
+ * @param colorIndex - 主题色索引（可选）
+ * @param opacity - 透明度 0-1（可选）
+ * @returns 完整的主题色配置
+ */
+export function createThemeColorConfig(
+  color: string,
+  colorType: ThemeColorType,
+  colorIndex?: number,
+  opacity?: number
+): V1ColorConfig;
+
+/**
  * 创建主题色配置
  *
  * @param color - 颜色值
- * @param colorType - 主题色类型
+ * @param colorType - 主题色类型（可选，如果不提供则不创建themeColor）
  * @param colorIndex - 主题色索引（可选）
  * @param opacity - 透明度 0-1（可选）
  * @returns 完整的主题色配置
@@ -61,6 +83,10 @@ export function colorConfigToString(config: V1ColorConfig): string {
  * ```typescript
  * import { createThemeColorConfig } from '@douglasdong/ppteditor-types';
  *
+ * // 基础颜色配置
+ * const basicColor = createThemeColorConfig('#FF0000');
+ *
+ * // 带主题色的配置
  * const themeColor = createThemeColorConfig(
  *   '#FF0000',
  *   'accent1',
@@ -71,14 +97,17 @@ export function colorConfigToString(config: V1ColorConfig): string {
  */
 export function createThemeColorConfig(
   color: string,
-  colorType: ThemeColorType,
+  colorType?: ThemeColorType,
   colorIndex?: number,
   opacity?: number
 ): V1ColorConfig {
   const config: V1ColorConfig = {
-    color,
-    colorType
+    color
   };
+
+  if (colorType !== undefined) {
+    config.colorType = colorType;
+  }
 
   if (colorIndex !== undefined) {
     config.colorIndex = colorIndex;
@@ -165,6 +194,98 @@ export function mergeColorConfig(
  * }
  * ```
  */
+/**
+ * 检查是否为新格式的主题色对象
+ *
+ * @param themeColor - 要检查的主题色值
+ * @returns 如果是新格式的主题色对象返回 true
+ *
+ * @example
+ * ```typescript
+ * import { isThemeColorObject } from '@douglasdong/ppteditor-types';
+ *
+ * if (isThemeColorObject(config.themeColor)) {
+ *   console.log('新格式的主题色:', config.themeColor.type);
+ * }
+ * ```
+ */
+export function isThemeColorObject(
+  themeColor: unknown
+): themeColor is { color: string; type: ThemeColorType } {
+  return (
+    typeof themeColor === 'object' &&
+    themeColor !== null &&
+    'color' in themeColor &&
+    'type' in themeColor &&
+    typeof (themeColor as any).color === 'string' &&
+    typeof (themeColor as any).type === 'string'
+  );
+}
+
+/**
+ * 迁移助手函数 - 将旧格式的颜色配置升级为新格式
+ *
+ * @param oldConfig - 旧格式的颜色配置（可能包含字符串类型的 themeColor）
+ * @param defaultColorType - 当旧配置为字符串 themeColor 时的默认主题色类型
+ * @returns 新格式的 V1ColorConfig
+ *
+ * @example
+ * ```typescript
+ * import { migrateColorConfig } from '@douglasdong/ppteditor-types';
+ *
+ * // 迁移旧的字符串格式
+ * const migratedConfig = migrateColorConfig({
+ *   color: '#ff0000',
+ *   themeColor: '#ff0000'  // 旧格式
+ * }, 'accent1');
+ *
+ * // 结果：{ color: '#ff0000', themeColor: { color: '#ff0000', type: 'accent1' } }
+ * ```
+ */
+export function migrateColorConfig(
+  oldConfig: any,
+  defaultColorType: ThemeColorType = 'accent1'
+): V1ColorConfig {
+  if (!oldConfig || typeof oldConfig !== 'object') {
+    throw new Error('Invalid color config for migration');
+  }
+
+  const migratedConfig: V1ColorConfig = {
+    color: oldConfig.color || '#000000'
+  };
+
+  // 保留其他字段
+  if (oldConfig.colorType !== undefined) {
+    migratedConfig.colorType = oldConfig.colorType;
+  }
+  if (oldConfig.colorIndex !== undefined) {
+    migratedConfig.colorIndex = oldConfig.colorIndex;
+  }
+  if (oldConfig.opacity !== undefined) {
+    migratedConfig.opacity = oldConfig.opacity;
+  }
+
+  // 处理 themeColor 迁移
+  if (oldConfig.themeColor !== undefined) {
+    if (isThemeColorObject(oldConfig.themeColor)) {
+      // 已经是新格式，直接使用
+      migratedConfig.themeColor = oldConfig.themeColor;
+    } else if (typeof oldConfig.themeColor === 'string') {
+      // 旧的字符串格式，转换为新格式
+      migratedConfig.themeColor = {
+        color: oldConfig.themeColor,
+        type: oldConfig.colorType || defaultColorType
+      };
+      // 确保 colorType 字段也被设置
+      if (!migratedConfig.colorType) {
+        migratedConfig.colorType = defaultColorType;
+      }
+    }
+  }
+
+  return migratedConfig;
+}
+
 export function validateColorConfig(config: unknown): config is V1ColorConfig {
   if (!config || typeof config !== 'object') return false;
 

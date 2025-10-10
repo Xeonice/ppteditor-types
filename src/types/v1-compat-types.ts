@@ -52,6 +52,25 @@ export type { ShapePathFormulaValue }
  */
 export type V1ColorConfig = ColorConfig;
 
+/**
+ * Legacy V1 颜色配置类型 (用于向后兼容)
+ * 支持旧版本中 themeColor 为字符串的格式
+ *
+ * 注意：这个类型仅用于测试和向后兼容，新代码应使用 V1ColorConfig
+ */
+export interface LegacyV1ColorConfig {
+  color: string
+  themeColor?: string              // 旧版本的字符串格式
+  colorType?: ThemeColorType
+  colorIndex?: number
+  opacity?: number
+}
+
+/**
+ * V1 颜色配置联合类型，支持新格式和 legacy 格式
+ */
+export type V1ColorConfigUnion = V1ColorConfig | LegacyV1ColorConfig;
+
 // V1项目中的渐变类型 - 基于适配文档的类型替换模式
 export interface V1ShapeGradient {
   type: "linear" | "radial";

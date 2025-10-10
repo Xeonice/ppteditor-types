@@ -13,6 +13,7 @@ import type {
   V1CompatibleTextElement,
   V1CompatibleShapeElement,
   V1ColorConfig,
+  LegacyV1ColorConfig,
   V1ShapeGradient,
   V1PPTElementShadow,
   V1PPTElementOutline
@@ -52,9 +53,9 @@ describe('V1ToV2Adapter', () => {
     });
 
     it('should handle themeColor as string (legacy format)', () => {
-      const v1Color: V1ColorConfig = {
+      const v1Color: LegacyV1ColorConfig = {
         color: '#0000ff',
-        themeColor: '#ff0000' as any // 模拟旧格式
+        themeColor: '#ff0000' // 旧格式的字符串 themeColor
       };
 
       const result = V1ToV2Adapter.convertColor(v1Color);
