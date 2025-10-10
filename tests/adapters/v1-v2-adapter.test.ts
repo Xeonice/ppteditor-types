@@ -484,3 +484,153 @@ describe('AutoAdapter', () => {
     });
   });
 });
+
+describe('Round-trip Conversion Tests (V1→V2→V1)', () => {
+  it('should preserve data integrity through V1→V2→V1 conversion', () => {
+    const originalV1Color: V1ColorConfig = {
+      color: '#ff0000',
+      themeColor: {
+        color: '#ff0000',
+        type: 'accent1'
+      },
+      opacity: 0.8
+    };
+
+    // V1 → V2
+    const v2Color = V1ToV2Adapter.convertColor(originalV1Color);
+    expect(v2Color).toBe('#ff0000');
+
+    // V2 → V1
+    const convertedV1Color = V2ToV1Adapter.convertColor(v2Color);
+    expect(convertedV1Color.color).toBe('#ff0000');
+    expect(convertedV1Color.themeColor).toBeUndefined(); // themeColor is optional in V1
+  });
+
+  it('should handle gradient round-trip conversion', () => {
+    const originalV1Gradient: V1ShapeGradient = {
+      type: 'linear',
+      themeColor: [
+        {
+          color: '#ff0000',
+          themeColor: {
+            color: '#ff0000',
+            type: 'accent1'
+          }
+        } as V1ColorConfig,
+        {
+          color: '#0000ff',
+          themeColor: {
+            color: '#0000ff',
+            type: 'accent2'
+          }
+        } as V1ColorConfig
+      ],
+      rotate: 45
+    };
+
+    // V1 → V2
+    const v2Gradient = V1ToV2Adapter.convertGradient(originalV1Gradient);
+    expect(v2Gradient.type).toBe('linear');
+    expect(v2Gradient.colors).toHaveLength(2);
+    expect(v2Gradient.rotate).toBe(45);
+
+    // V2 → V1
+    const convertedV1Gradient = V2ToV1Adapter.convertGradient(v2Gradient);
+    expect(convertedV1Gradient.type).toBe('linear');
+    expect(convertedV1Gradient.themeColor).toHaveLength(2);
+    expect(convertedV1Gradient.rotate).toBe(45);
+
+    // Verify colors are preserved
+    expect(convertedV1Gradient.themeColor[0].color).toBe('#ff0000');
+    expect(convertedV1Gradient.themeColor[1].color).toBe('#0000ff');
+  });
+
+  it('should preserve shadow properties through round-trip', () => {
+    const originalV1Shadow: V1PPTElementShadow = {
+      h: 10,
+      v: 10,
+      blur: 5,
+      themeColor: {
+        color: '#333333',
+        themeColor: {
+          color: '#333333',
+          type: 'dk1'
+        }
+      } as V1ColorConfig
+    };
+
+    // V1 → V2
+    const v2Shadow = V1ToV2Adapter.convertShadow(originalV1Shadow);
+    expect(v2Shadow).toBeDefined();
+    expect(v2Shadow!.h).toBe(10);
+    expect(v2Shadow!.v).toBe(10);
+    expect(v2Shadow!.blur).toBe(5);
+    expect(v2Shadow!.color).toBe('#333333');
+
+    // V2 → V1
+    const convertedV1Shadow = V2ToV1Adapter.convertShadow(v2Shadow!);
+    expect(convertedV1Shadow).toBeDefined();
+    expect(convertedV1Shadow!.h).toBe(10);
+    expect(convertedV1Shadow!.v).toBe(10);
+    expect(convertedV1Shadow!.blur).toBe(5);
+    expect(convertedV1Shadow!.themeColor).toEqual({ color: '#333333' }); // V2ToV1Adapter creates a color config
+  });
+
+  it('should handle text element round-trip conversion', () => {
+    const originalV1Text: V1CompatibleTextElement = {
+      id: 'text-roundtrip',
+      type: 'text',
+      left: 100,
+      top: 100,
+      width: 200,
+      height: 50,
+      rotate: 0,
+      content: 'Round-trip Test',
+      defaultFontName: 'Arial',
+      defaultColor: {
+        color: '#333333',
+        themeColor: {
+          color: '#333333',
+          type: 'dk1'
+        }
+      } as V1ColorConfig,
+      themeFill: {
+        color: '#ffffff',
+        themeColor: {
+          color: '#ffffff',
+          type: 'lt1'
+        }
+      } as V1ColorConfig,
+      lineHeight: 1.5,
+      fit: 'auto' as const
+    };
+
+    // V1 → V2
+    const v2Text = V1ToV2Adapter.convertTextElement(originalV1Text);
+    expect(v2Text.id).toBe('text-roundtrip');
+    expect(v2Text.content).toBe('Round-trip Test');
+    expect(v2Text.defaultColor).toBe('#333333');
+    expect(v2Text.fill).toBe('#ffffff');
+
+    // V2 → V1
+    const convertedV1Text = V2ToV1Adapter.convertTextElement(v2Text);
+    expect(convertedV1Text.id).toBe('text-roundtrip');
+    expect(convertedV1Text.content).toBe('Round-trip Test');
+    expect(convertedV1Text.defaultColor.color).toBe('#333333');
+    expect(convertedV1Text.themeFill?.color).toBe('#ffffff');
+    expect(convertedV1Text.lineHeight).toBe(1.5);
+  });
+
+  it('should handle edge cases in round-trip conversion', () => {
+    // Test empty/undefined values
+    const minimalV1Color: V1ColorConfig = {
+      color: '#000000'
+    };
+
+    const v2Color = V1ToV2Adapter.convertColor(minimalV1Color);
+    const backToV1 = V2ToV1Adapter.convertColor(v2Color);
+
+    expect(backToV1.color).toBe('#000000');
+    expect(backToV1.themeColor).toBeUndefined();
+  });
+});

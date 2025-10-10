@@ -61,13 +61,18 @@ export class V1ToV2Adapter {
   static convertColor = memoize((v1Color: V1ColorConfig | undefined | null): string => {
     // Add null safety checks
     if (!v1Color) return '#000000';
-    // ColorConfig.themeColor 现在是对象类型，提取 color 字段
+
+    // Explicit priority: color (if non-empty) > themeColor > default
+    if (v1Color.color) return v1Color.color;
+
+    // Extract color from themeColor (supports both old string and new object format)
     const themeColorValue = typeof v1Color.themeColor === 'object' && v1Color.themeColor
       ? v1Color.themeColor.color
       : typeof v1Color.themeColor === 'string'
       ? v1Color.themeColor
       : undefined;
-    return v1Color.color || themeColorValue || '#000000';
+
+    return themeColorValue || '#000000';
   })
 
   /**

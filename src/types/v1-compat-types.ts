@@ -585,7 +585,7 @@ import type {
   AIImageStatus,
   TemplatePayType
 } from '../extensions/project-extended.js';
-import { ShapePathFormulasKeys } from './v2-standard-types.js';
+import { ShapePathFormulasKeys } from '../enums/shape.js';
 
 /**
  * 翻页模式

@@ -91,6 +91,10 @@ export function createThemeColorConfig(
   // V1ColorConfig 现在使用项目的 ColorConfig
   // themeColor 字段是可选的对象类型：{ color: string; type: ThemeColorType }
   if (colorType) {
+    // Validate color format before creating themeColor object
+    if (!color || typeof color !== 'string') {
+      throw new Error('Invalid color value for theme color configuration');
+    }
     config.themeColor = {
       color,
       type: colorType
