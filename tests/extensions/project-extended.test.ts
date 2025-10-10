@@ -31,6 +31,33 @@ describe('ProjectExtended Types', () => {
       const statuses: AIImageStatus[] = ['pending', 'success', 'failed']
       expect(statuses.length).toBe(3)
     })
+
+    it('should accept all new status values', () => {
+      const allStatuses: AIImageStatus[] = [
+        'pending',      // 等待中
+        'building',     // 构建中 (新增)
+        'done',         // 完成 (新增)
+        'success',      // 成功
+        'failed',       // 失败
+        'build_failed'  // 构建失败 (新增)
+      ]
+      expect(allStatuses.length).toBe(6)
+
+      // 验证每个状态都是有效的
+      allStatuses.forEach(status => {
+        const testValue: AIImageStatus = status
+        expect(typeof testValue).toBe('string')
+      })
+    })
+
+    it('should provide semantic meaning for building states', () => {
+      // 测试构建相关状态的语义
+      const buildingStates: AIImageStatus[] = ['pending', 'building', 'done', 'success']
+      const failureStates: AIImageStatus[] = ['failed', 'build_failed']
+
+      expect(buildingStates.length).toBe(4)
+      expect(failureStates.length).toBe(2)
+    })
   })
 
   describe('ThemeColorType', () => {
@@ -446,6 +473,53 @@ describe('ProjectExtended Types', () => {
         expect(validateColorConfig('string')).toBe(false)
         expect(validateColorConfig({})).toBe(false)
         expect(validateColorConfig({ opacity: 0.5 })).toBe(false)
+      })
+
+      it('should validate themeColor object format (new format)', () => {
+        const validColorWithTheme = {
+          color: '#FF0000',
+          themeColor: {
+            color: '#FF0000',
+            type: 'accent1'
+          }
+        }
+        expect(validateColorConfig(validColorWithTheme)).toBe(true)
+      })
+
+      it('should reject invalid themeColor objects', () => {
+        // Missing color field
+        expect(validateColorConfig({
+          color: '#FF0000',
+          themeColor: {
+            type: 'accent1'
+          }
+        })).toBe(false)
+
+        // Missing type field
+        expect(validateColorConfig({
+          color: '#FF0000',
+          themeColor: {
+            color: '#FF0000'
+          }
+        })).toBe(false)
+
+        // themeColor is null
+        expect(validateColorConfig({
+          color: '#FF0000',
+          themeColor: null
+        })).toBe(false)
+
+        // themeColor is string (legacy format no longer supported)
+        expect(validateColorConfig({
+          color: '#FF0000',
+          themeColor: '#FF0000'
+        })).toBe(false)
+
+        // themeColor is array
+        expect(validateColorConfig({
+          color: '#FF0000',
+          themeColor: ['#FF0000']
+        })).toBe(false)
       })
     })
 

@@ -38,8 +38,8 @@ describe('V1/V2 Compatibility Integration', () => {
       lock: false,
       content: 'V1项目标题',
       defaultFontName: 'Microsoft YaHei',
-      defaultColor: { color: '#333333', themeColor: '#333333' },
-      themeFill: { color: '#ffffff', themeColor: '#ffffff' },
+      defaultColor: { color: '#333333' },
+      themeFill: { color: '#ffffff' },
       lineHeight: 1.2,
       opacity: 1,
       vertical: false,
@@ -58,16 +58,16 @@ describe('V1/V2 Compatibility Integration', () => {
       width: 300,
       height: 200,
       rotate: 15,
-      viewBox: [0, 0],
+      viewBox: [0, 0] as [number, number],
       path: 'M0,0 L300,0 L300,200 L0,200 Z',
       fixedRatio: false,
-      themeFill: { color: '#4285f4', themeColor: '#4285f4' },
+      themeFill: { color: '#4285f4' },
       gradient: {
-        type: 'linear',
+        type: 'linear' as const,
         themeColor: [
-          { color: '#4285f4', themeColor: '#4285f4' },
-          { color: '#34a853', themeColor: '#34a853' }
-        ],
+          { color: '#4285f4' },
+          { color: '#34a853' }
+        ] as [{ color: string }, { color: string }],
         rotate: 45
       },
       opacity: 0.9,
@@ -118,13 +118,14 @@ describe('V1/V2 Compatibility Integration', () => {
       height: 60,
       rotate: 0,
       content: 'V2标准标题',
+      defaultFontName: 'Arial',
       defaultColor: '#333333',
       fill: '#ffffff',
-      textType: 'title',
+      textType: 'title' as const,
       lineHeight: 1.2,
       opacity: 1,
       vertical: false,
-      fit: 'none'
+      fit: 'none' as const
     },
     {
       id: 'slide-2-shape-1',
@@ -134,12 +135,12 @@ describe('V1/V2 Compatibility Integration', () => {
       width: 300,
       height: 200,
       rotate: 15,
-      viewBox: [0, 0],
+      viewBox: [0, 0] as [number, number],
       path: 'M0,0 L300,0 L300,200 L0,200 Z',
       fixedRatio: false,
       fill: '#4285f4',
       gradient: {
-        type: 'linear',
+        type: 'linear' as const,
         colors: [
           { pos: 0, color: '#4285f4' },
           { pos: 100, color: '#34a853' }
@@ -321,8 +322,8 @@ describe('V1/V2 Compatibility Integration', () => {
       const complexV1Gradient = {
         type: 'radial',
         themeColor: [
-          { color: 'rgba(255,0,0,0.8)', themeColor: '#ff0000' },
-          { color: 'transparent', themeColor: '#ffffff' }
+          { color: 'rgba(255,0,0,0.8)' },
+          { color: 'transparent' }
         ],
         rotate: 135
       };
@@ -352,29 +353,43 @@ describe('V1/V2 Compatibility Integration', () => {
     });
   });
 
+  // 辅助函数：创建测试元素
+  function createTestElement(i: number) {
+    const base = {
+      id: `element-${i}`,
+      left: i * 10,
+      top: i * 10,
+      width: 100,
+      height: 50,
+      rotate: 0
+    };
+
+    if (i % 2 === 0) {
+      return {
+        ...base,
+        type: 'text' as const,
+        content: `Text ${i}`,
+        defaultFontName: 'Arial',
+        defaultColor: { color: '#000000' },
+        tag: `tag-${i}`
+      };
+    } else {
+      return {
+        ...base,
+        type: 'shape' as const,
+        viewBox: [0, 0] as [number, number],
+        path: `M0,0 L100,50 Z`,
+        fixedRatio: false,
+        themeFill: { color: '#ff0000' },
+        index: i
+      };
+    }
+  }
+
   describe('Performance and Scale Testing', () => {
     it('should handle large datasets efficiently', () => {
       // 生成大量测试数据
-      const largeDataset = Array.from({ length: 1000 }, (_, i) => ({
-        id: `element-${i}`,
-        type: i % 2 === 0 ? 'text' : 'shape',
-        left: i * 10,
-        top: i * 10,
-        width: 100,
-        height: 50,
-        rotate: 0,
-        ...(i % 2 === 0 ? {
-          content: `Text ${i}`,
-          defaultColor: { color: '#000000', themeColor: '#000000' },
-          tag: `tag-${i}`
-        } : {
-          viewBox: [0, 0],
-          path: `M0,0 L100,50 Z`,
-          fixedRatio: false,
-          themeFill: { color: '#ff0000', themeColor: '#ff0000' },
-          index: i
-        })
-      }));
+      const largeDataset = Array.from({ length: 1000 }, (_, i) => createTestElement(i));
 
       const startTime = Date.now();
       const result = ConverterUtils.toV2(largeDataset);
@@ -406,7 +421,7 @@ describe('V1/V2 Compatibility Integration', () => {
         logLevel: 'none'
       });
 
-      const result = middleware.processElements(corruptedData.filter(Boolean), {
+      const result = middleware.processElements(corruptedData.filter(Boolean) as any, {
         source: 'import',
         target: 'processing'
       });
@@ -432,7 +447,7 @@ describe('V1/V2 Compatibility Integration', () => {
         }
       });
 
-      const result = converter.smartConvert(problematicElement, 'v2');
+      const result = converter.smartConvert(problematicElement as any, 'v2');
       expect(result).toBeNull();
       // 注意：在实际测试中onError可能不会被调用，因为我们的适配器比较宽松
     });
