@@ -169,9 +169,15 @@ export function validateColorConfig(config: unknown): config is V1ColorConfig {
   // color 字段是必需的
   if (typeof color.color !== 'string') return false;
 
-  // 验证可选字段类型
-  if (color.themeColor !== undefined && typeof color.themeColor !== 'string') {
-    return false;
+  // 验证可选的 themeColor 字段（现在是对象类型）
+  if (color.themeColor !== undefined) {
+    if (typeof color.themeColor !== 'object' || color.themeColor === null) {
+      return false;
+    }
+    const themeColor = color.themeColor as Record<string, unknown>;
+    // 验证 themeColor 对象的必需字段
+    if (typeof themeColor.color !== 'string') return false;
+    if (typeof themeColor.type !== 'string') return false;
   }
 
   if (color.colorType !== undefined && typeof color.colorType !== 'string') {

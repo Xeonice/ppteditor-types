@@ -32,6 +32,22 @@ import type {
 /**
  * V1 → V2 转换器
  * @description 提供从V1格式到V2标准格式的类型转换功能
+ *
+ * ## ColorConfig 迁移说明
+ *
+ * V1ColorConfig 现在直接使用项目的 ColorConfig 类型：
+ * - 旧格式: `{ color: string, themeColor: string }`
+ * - 新格式: `{ color: string, themeColor?: { color: string, type: string } }`
+ *
+ * ### 迁移策略：
+ * 1. 优先使用 `color` 字段的值作为输出
+ * 2. `themeColor` 从必需的字符串变为可选的对象类型
+ * 3. 保持向后兼容，适配器能处理新旧两种格式
+ * 4. 当 themeColor 存在时，从对象中提取 color 值
+ *
+ * ### 转换流程：
+ * V1 → V2: 直接使用 ColorConfig.color 字段
+ * V2 → V1: 创建 ColorConfig 对象，themeColor 为可选
  */
 export class V1ToV2Adapter {
   /**
@@ -276,7 +292,7 @@ export class V2ToV1Adapter {
       h: v2Shadow.h,
       v: v2Shadow.v,
       blur: v2Shadow.blur,
-      themeColor: v2Shadow.color ? this.convertColor(v2Shadow.color) : { color: '#000000' }
+      themeColor: v2Shadow.color ? this.convertColor(v2Shadow.color) : undefined
     };
   })
 
