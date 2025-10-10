@@ -276,7 +276,7 @@ export class V2ToV1Adapter {
       h: v2Shadow.h,
       v: v2Shadow.v,
       blur: v2Shadow.blur,
-      themeColor: this.convertColor(v2Shadow.color)
+      themeColor: v2Shadow.color ? this.convertColor(v2Shadow.color) : { color: '#000000' }
     };
   })
 
@@ -410,11 +410,10 @@ export class VersionDetector {
                        'from' in element ||
                        'isDefault' in element;
 
-    // 检查V1特有颜色格式
+    // 检查V1特有颜色格式 - V1ColorConfig 有 color 字段，themeColor 是可选的
     const hasV1ColorFormat = !!(element.defaultColor &&
                              typeof element.defaultColor === 'object' &&
-                             'color' in element.defaultColor &&
-                             'themeColor' in element.defaultColor);
+                             'color' in element.defaultColor);
 
     // 检查V1特有渐变格式
     const hasV1GradientFormat = !!(element.gradient &&

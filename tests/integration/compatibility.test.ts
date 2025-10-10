@@ -353,41 +353,43 @@ describe('V1/V2 Compatibility Integration', () => {
     });
   });
 
+  // 辅助函数：创建测试元素
+  function createTestElement(i: number) {
+    const base = {
+      id: `element-${i}`,
+      left: i * 10,
+      top: i * 10,
+      width: 100,
+      height: 50,
+      rotate: 0
+    };
+
+    if (i % 2 === 0) {
+      return {
+        ...base,
+        type: 'text' as const,
+        content: `Text ${i}`,
+        defaultFontName: 'Arial',
+        defaultColor: { color: '#000000' },
+        tag: `tag-${i}`
+      };
+    } else {
+      return {
+        ...base,
+        type: 'shape' as const,
+        viewBox: [0, 0] as [number, number],
+        path: `M0,0 L100,50 Z`,
+        fixedRatio: false,
+        themeFill: { color: '#ff0000' },
+        index: i
+      };
+    }
+  }
+
   describe('Performance and Scale Testing', () => {
     it('should handle large datasets efficiently', () => {
       // 生成大量测试数据
-      const largeDataset = Array.from({ length: 1000 }, (_, i) => {
-        if (i % 2 === 0) {
-          return {
-            id: `element-${i}`,
-            type: 'text' as const,
-            left: i * 10,
-            top: i * 10,
-            width: 100,
-            height: 50,
-            rotate: 0,
-            content: `Text ${i}`,
-            defaultFontName: 'Arial',
-            defaultColor: { color: '#000000' },
-            tag: `tag-${i}`
-          };
-        } else {
-          return {
-            id: `element-${i}`,
-            type: 'shape' as const,
-            left: i * 10,
-            top: i * 10,
-            width: 100,
-            height: 50,
-            rotate: 0,
-            viewBox: [0, 0] as [number, number],
-            path: `M0,0 L100,50 Z`,
-            fixedRatio: false,
-            themeFill: { color: '#ff0000' },
-            index: i
-          };
-        }
-      });
+      const largeDataset = Array.from({ length: 1000 }, (_, i) => createTestElement(i));
 
       const startTime = Date.now();
       const result = ConverterUtils.toV2(largeDataset);

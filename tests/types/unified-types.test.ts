@@ -65,7 +65,8 @@ describe('UnifiedPPTElement', () => {
       expect(result.id).toBe('test-2');
       expect(result.type).toBe('text');
       expect((result as any).defaultColor).toHaveProperty('color');
-      expect((result as any).defaultColor).toHaveProperty('themeColor');
+      // themeColor 现在是可选的，不强制要求存在
+      expect((result as any).defaultColor.color).toBe('#ff0000');
     });
   });
 

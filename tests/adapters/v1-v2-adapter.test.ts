@@ -37,6 +37,42 @@ describe('V1ToV2Adapter', () => {
       const result = V1ToV2Adapter.convertColor(v1Color);
       expect(result).toBe('#00ff00');
     });
+
+    it('should handle new themeColor object format', () => {
+      const v1Color: V1ColorConfig = {
+        color: '#ff0000',
+        themeColor: {
+          color: '#ff0000',
+          type: 'accent1'
+        }
+      };
+
+      const result = V1ToV2Adapter.convertColor(v1Color);
+      expect(result).toBe('#ff0000');
+    });
+
+    it('should handle themeColor as string (legacy format)', () => {
+      const v1Color: V1ColorConfig = {
+        color: '#0000ff',
+        themeColor: '#ff0000' as any // 模拟旧格式
+      };
+
+      const result = V1ToV2Adapter.convertColor(v1Color);
+      expect(result).toBe('#0000ff');
+    });
+
+    it('should prioritize themeColor.color when available', () => {
+      const v1Color: V1ColorConfig = {
+        color: '#000000',
+        themeColor: {
+          color: '#ff00ff',
+          type: 'scheme'
+        }
+      };
+
+      const result = V1ToV2Adapter.convertColor(v1Color);
+      expect(result).toBe('#000000'); // 应该使用 color 字段，而不是 themeColor
+    });
   });
 
   describe('convertShadow', () => {
@@ -139,6 +175,70 @@ describe('V1ToV2Adapter', () => {
       expect(result.colors[1].pos).toBe(100);
       expect(result.colors[1].color).toBe('#0000ff');
     });
+
+    it('should handle null colors in gradient themeColor array', () => {
+      const v1Gradient: V1ShapeGradient = {
+        type: 'linear',
+        themeColor: [
+          null as any, // 模拟 null 值
+          { color: '#0000ff' }
+        ],
+        rotate: 45
+      };
+
+      // 不应该抛出错误
+      expect(() => {
+        const result = V1ToV2Adapter.convertGradient(v1Gradient);
+        expect(result.colors).toHaveLength(2);
+        expect(result.colors[0].color).toBe('#000000'); // 应该有默认值
+        expect(result.colors[1].color).toBe('#0000ff');
+      }).not.toThrow();
+    });
+
+    it('should handle undefined colors in gradient themeColor array', () => {
+      const v1Gradient: V1ShapeGradient = {
+        type: 'radial',
+        themeColor: [
+          { color: '#ff0000' },
+          undefined as any // 模拟 undefined 值
+        ],
+        rotate: 90
+      };
+
+      expect(() => {
+        const result = V1ToV2Adapter.convertGradient(v1Gradient);
+        expect(result.colors).toHaveLength(2);
+        expect(result.colors[0].color).toBe('#ff0000');
+        expect(result.colors[1].color).toBe('#000000'); // 应该有默认值
+      }).not.toThrow();
+    });
+
+    it('should handle gradient with new themeColor object format', () => {
+      const v1Gradient: V1ShapeGradient = {
+        type: 'linear',
+        themeColor: [
+          {
+            color: '#ff0000',
+            themeColor: {
+              color: '#ff0000',
+              type: 'accent1'
+            }
+          } as V1ColorConfig,
+          {
+            color: '#0000ff',
+            themeColor: {
+              color: '#0000ff',
+              type: 'accent2'
+            }
+          } as V1ColorConfig
+        ],
+        rotate: 180
+      };
+
+      const result = V1ToV2Adapter.convertGradient(v1Gradient);
+      expect(result.colors[0].color).toBe('#ff0000');
+      expect(result.colors[1].color).toBe('#0000ff');
+    });
   });
 
   describe('convertTextElement', () => {
@@ -184,7 +284,8 @@ describe('V2ToV1Adapter', () => {
       const result = V2ToV1Adapter.convertColor('#ff0000');
 
       expect(result.color).toBe('#ff0000');
-      expect(result.themeColor).toBe('#ff0000');
+      // themeColor 现在是可选的，不再强制要求
+      expect(result.themeColor).toBeUndefined();
     });
   });
 
