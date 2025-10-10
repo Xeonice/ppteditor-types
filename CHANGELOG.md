@@ -5,6 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.1] - 2025-10-11
+
+### 🔧 修复
+
+- **ColorConfig 类型迁移修复**
+  - 修复了从 `{ themeColor: string }` 到 `{ themeColor?: { color: string, type: ThemeColorType } }` 的类型迁移问题
+  - 更新了 V1ColorConfig 直接使用项目的 ColorConfig 定义，确保类型一致性
+  - 改进了 `validateColorConfig()` 验证逻辑，正确处理新的 themeColor 对象格式
+  - 修复了 `convertColor()` 优先级逻辑：color (非空) > themeColor > 默认值
+  - 增强了 `createThemeColorConfig()` 的 null 安全检查和错误信息描述性
+
+- **测试覆盖完善**
+  - 新增 `tests/utils/color-helpers.test.ts` 颜色助手函数测试
+  - 添加了 V1→V2→V1 轮转测试，确保转换的可逆性
+  - 增加了边界情况和错误处理的测试覆盖
+  - 所有 208 个测试用例通过
+
+- **向后兼容性保证**
+  - 适配器同时支持旧的字符串格式和新的对象格式 themeColor
+  - 提供渐进式迁移的回退逻辑
+  - 版本检测器无需 themeColor 字段即可正确识别 V1 元素
+
+### 📖 迁移指南
+
+如果您正在从旧版本的 ColorConfig 迁移，请注意以下变更：
+
+**旧格式 (不再支持):**
+```typescript
+{
+  color: "#ff0000",
+  themeColor: "#ff0000"  // 字符串格式
+}
+```
+
+**新格式:**
+```typescript
+{
+  color: "#ff0000",
+  themeColor: {  // 对象格式
+    color: "#ff0000",
+    type: "accent1"
+  }
+}
+```
+
+**自动迁移:**
+- V1/V2 适配器会自动处理格式转换
+- 使用 `createThemeColorConfig()` 创建新的主题色配置
+- 使用 `validateColorConfig()` 验证配置有效性
+
 ## [2.3.0] - 2025-10-09
 
 ### ✨ 新增

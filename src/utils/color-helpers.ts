@@ -93,7 +93,7 @@ export function createThemeColorConfig(
   if (colorType) {
     // Validate color format before creating themeColor object
     if (!color || typeof color !== 'string') {
-      throw new Error('Invalid color value for theme color configuration');
+      throw new Error(`Invalid color value for theme color configuration: expected non-empty string, got ${typeof color}`);
     }
     config.themeColor = {
       color,
