@@ -89,15 +89,26 @@ export interface V1PPTElementShadow {
 // V1项目中的描边类型 - 基于适配文档的完全重定义模式
 /**
  * 元素边框
+ *
+ * ⚠️ 设计说明：
+ * - 边框颜色使用简单的字符串类型 (color?: string)，而非 V1ColorConfig 对象
+ * - 这是因为实际导出数据中，边框颜色已被计算为最终的十六进制值
+ * - 与表格单元格样式保持一致，都使用简化的颜色表示
+ * - 其他元素（如文本、形状）仍使用 V1ColorConfig 以支持主题色功能
  */
 export interface V1PPTElementOutline {
   style?: "dashed" | "solid" | "dotted";  // 支持所有线条样式
   width?: number;
 
   /**
-   * 边框颜色
-   * 十六进制颜色值
-   * @example "#000000", "#CCCCCC"
+   * 边框颜色（可选）
+   * 十六进制颜色值，如 "#000000"
+   *
+   * 注意：
+   * - 如果未指定，渲染时应使用默认颜色（通常为黑色 #000000）
+   * - V1→V2 转换时，undefined 值会被保留（V2 也支持 color?: string）
+   *
+   * @example "#000000", "#CCCCCC", "#4472C4"
    */
   color?: string;
 }
@@ -356,6 +367,12 @@ export interface V1PPTNoneElement extends V1CompatibleBaseElement {
 
 /**
  * 表格单元格样式
+ *
+ * ⚠️ 设计说明：
+ * - 颜色字段使用简单字符串类型，而非 V1ColorConfig 对象
+ * - 这是根据实际导出数据结构优化的结果
+ * - 表格导出时不保留主题色信息，所有颜色都被计算为最终的十六进制值
+ * - 字体大小使用驼峰命名 (fontSize) 以匹配实际导出数据
  */
 export interface V1TableCellStyle {
   bold?: boolean;
