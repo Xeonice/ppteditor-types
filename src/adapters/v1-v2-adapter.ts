@@ -149,7 +149,7 @@ export class V1ToV2Adapter {
     return {
       style: v1Outline.style as LineStyleType,
       width: v1Outline.width,
-      color: this.convertColor(v1Outline.themeColor)
+      color: v1Outline.color
     };
   })
 
@@ -318,7 +318,7 @@ export class V2ToV1Adapter {
     return {
       style: v2Outline.style as "dashed" | "solid",
       width: v2Outline.width,
-      themeColor: v2Outline.color ? this.convertColor(v2Outline.color) : undefined
+      color: v2Outline.color
     };
   })
 

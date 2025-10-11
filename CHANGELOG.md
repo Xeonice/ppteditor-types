@@ -5,6 +5,75 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2025-10-11
+
+### 💥 破坏性变更
+
+- **表格类型重构：与实际导出数据完全匹配**
+  - `V1TableCellStyle` 类型定义更新
+    - 移除 `fontsize?: string`，改为 `fontSize?: string` (驼峰命名 + 单位，如 "14pt")
+    - 移除 `themeColor?: V1ColorConfig`，改为 `color?: string` (十六进制颜色值)
+    - 移除 `themeBackcolor?: V1ColorConfig`，改为 `backcolor?: string` (十六进制颜色值)
+
+  - `V1PPTElementOutline` 类型定义更新
+    - 移除 `themeColor?: V1ColorConfig`，改为 `color?: string` (十六进制颜色值)
+
+### ✨ 新增
+
+- **完善的文档注释**
+  - 为 `V1CompatibleTableElement` 添加详细的字段说明
+  - 为 `colWidths` 添加相对比例值的说明文档 (值域 [0, 1])
+  - 为 `theme` 字段添加导出行为说明（导出时不保留，会转为单元格样式）
+
+### 🔧 修复
+
+- **适配器代码更新**
+  - 更新 `V1ToV2Adapter.convertOutline()` 使用新的 `color` 字段
+  - 更新 `V2ToV1Adapter.convertOutline()` 使用新的 `color` 字段
+  - 移除对已弃用 `themeColor` 字段的依赖
+
+- **测试用例更新**
+  - 更新所有表格相关测试使用新字段名
+  - 所有 220 个测试用例通过
+
+### 📖 迁移指南
+
+**⚠️ 重要提示：**这是一个破坏性变更版本。如果您的项目使用了表格元素，需要更新字段名。
+
+**旧格式 (不再支持):**
+```typescript
+// 表格单元格样式
+{
+  fontsize: "14pt",
+  themeColor: { color: "#000000" },
+  themeBackcolor: { color: "#D9E2F3" }
+}
+
+// 边框
+{
+  outline: {
+    themeColor: { color: "#ffffff" }
+  }
+}
+```
+
+**新格式 (必须使用):**
+```typescript
+// 表格单元格样式
+{
+  fontSize: "14pt",           // 驼峰命名
+  color: "#000000",           // 简单字符串
+  backcolor: "#D9E2F3"        // 简单字符串
+}
+
+// 边框
+{
+  outline: {
+    color: "#ffffff"          // 简单字符串
+  }
+}
+```
+
 ## [2.3.1] - 2025-10-11
 
 ### 🔧 修复

@@ -87,10 +87,19 @@ export interface V1PPTElementShadow {
 }
 
 // V1项目中的描边类型 - 基于适配文档的完全重定义模式
+/**
+ * 元素边框
+ */
 export interface V1PPTElementOutline {
   style?: "dashed" | "solid" | "dotted";  // 支持所有线条样式
   width?: number;
-  themeColor?: V1ColorConfig;  // 使用项目的颜色系统和字段名
+
+  /**
+   * 边框颜色
+   * 十六进制颜色值
+   * @example "#000000", "#CCCCCC"
+   */
+  color?: string;
 }
 
 // V1项目基础元素扩展属性
@@ -353,9 +362,28 @@ export interface V1TableCellStyle {
   em?: boolean;
   underline?: boolean;
   strikethrough?: boolean;
-  themeColor?: V1ColorConfig;
-  themeBackcolor?: V1ColorConfig;
-  fontsize?: string;
+
+  /**
+   * 文字颜色
+   * 十六进制颜色值
+   * @example "#000000", "#FF5733"
+   */
+  color?: string;
+
+  /**
+   * 背景颜色
+   * 十六进制颜色值
+   * @example "#FFFFFF", "#D9E2F3"
+   */
+  backcolor?: string;
+
+  /**
+   * 字体大小
+   * 格式: "数字 + 单位"
+   * @example "14pt", "16px"
+   */
+  fontSize?: string;
+
   fontname?: string;
   align?: "left" | "center" | "right" | "justify";
 }
@@ -388,9 +416,62 @@ export interface V1TableTheme {
 export interface V1CompatibleTableElement extends V1CompatibleBaseElement {
   type: "table";
   outline: V1PPTElementOutline;
+
+  /**
+   * 表格主题配置（可选）
+   *
+   * ⚠️ 注意：
+   * 1. 该字段在导出时不保留，会被转换为单元格级别的样式
+   * 2. 导入时如果存在该字段，需要将主题配置应用到对应单元格
+   * 3. 主题色会被计算为具体的十六进制颜色值
+   *
+   * @example
+   * ```typescript
+   * // 编辑时可能包含主题信息
+   * theme: {
+   *   themeColor: { color: "#4472C4", colorType: "accent1" },
+   *   rowHeader: true,  // 标题行应用主题色
+   *   rowFooter: false,
+   *   colHeader: false,
+   *   colFooter: false
+   * }
+   *
+   * // 导出后主题信息丢失，转为单元格样式
+   * data: [[
+   *   {
+   *     text: "标题",
+   *     style: {
+   *       color: "#FFFFFF",
+   *       backcolor: "#4472C4"  // 主题色已计算
+   *     }
+   *   }
+   * ]]
+   * ```
+   */
   theme?: V1TableTheme;
+
+  /**
+   * 列宽数组（相对比例值）
+   *
+   * 每个值表示该列宽度占表格总宽度的比例，取值范围 [0, 1]
+   * 所有列宽比例之和应接近 1.0
+   *
+   * @example
+   * ```typescript
+   * // 4列表格，宽度比例约为 22% : 24% : 30% : 24%
+   * colWidths: [0.21978, 0.24242, 0.29545, 0.24233]
+   * ```
+   */
   colWidths: number[];
+
+  /**
+   * 单元格最小高度（像素）
+   */
   cellMinHeight: number;
+
+  /**
+   * 表格数据（二维数组）
+   */
   data: V1TableCell[][];
 }
 

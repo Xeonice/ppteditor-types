@@ -8,14 +8,14 @@
 
 ### 差异对比表
 
-| 项目 | V1兼容类型 (当前) | 实际导出数据 | 是否需要修改 |
+| 项目 | V1兼容类型 (旧) | 实际导出数据 | 修改方案 |
 |------|------------------|--------------|------------|
-| **colWidths 语义** | `number[]` 无明确说明 | 相对比例值 (0-1) | ⚠️ 需要文档说明 |
-| **单元格样式.字体大小** | `fontsize?: string` | `fontSize: "14pt"` (驼峰+单位) | ✅ **需要修改** |
-| **单元格样式.颜色** | `themeColor?: V1ColorConfig` | `color?: string` | ✅ **需要修改** |
-| **单元格样式.背景色** | `themeBackcolor?: V1ColorConfig` | `backcolor?: string` | ✅ **需要修改** |
-| **表格主题** | `theme?: V1TableTheme` | 完全不存在 | ⚠️ 需要文档说明 |
-| **边框.颜色** | `outline.themeColor?: V1ColorConfig` | `outline.color?: string` | ✅ **需要修改** |
+| **colWidths 语义** | `number[]` 无明确说明 | 相对比例值 (0-1) | ✅ 添加文档说明 |
+| **单元格样式.字体大小** | `fontsize?: string` | `fontSize: "14pt"` (驼峰+单位) | ✅ **改为 `fontSize`** |
+| **单元格样式.颜色** | `themeColor?: V1ColorConfig` | `color?: string` | ✅ **改为 `color`** |
+| **单元格样式.背景色** | `themeBackcolor?: V1ColorConfig` | `backcolor?: string` | ✅ **改为 `backcolor`** |
+| **表格主题** | `theme?: V1TableTheme` | 完全不存在 | ✅ 添加文档说明 |
+| **边框.颜色** | `outline.themeColor?: V1ColorConfig` | `outline.color?: string` | ✅ **改为 `color`** |
 
 ---
 
@@ -82,17 +82,10 @@ export interface V1TableCellStyle {
 
 #### 建议修改
 
-**方案 A: 同时支持两种字段名 (推荐)**
 ```typescript
 export interface V1TableCellStyle {
   /**
-   * 字体大小（旧字段名，保留兼容性）
-   * @deprecated 请使用 fontSize (驼峰命名)
-   */
-  fontsize?: string;
-
-  /**
-   * 字体大小（推荐使用）
+   * 字体大小
    * 格式: "数字 + 单位"，如 "14pt", "16px"
    *
    * @example "14pt", "16px", "1.2em"
@@ -102,21 +95,6 @@ export interface V1TableCellStyle {
   // ...其他字段
 }
 ```
-
-**方案 B: 仅使用新字段名 (破坏性变更)**
-```typescript
-export interface V1TableCellStyle {
-  /**
-   * 字体大小
-   * 格式: "数字 + 单位"，如 "14pt", "16px"
-   */
-  fontSize?: string;
-
-  // ...其他字段
-}
-```
-
-**推荐**: 使用方案 A,保持向后兼容。
 
 ---
 
@@ -149,34 +127,19 @@ export interface V1TableCellStyle {
 
 #### 建议修改
 
-**方案 A: 同时支持两种格式 (推荐)**
 ```typescript
 export interface V1TableCellStyle {
-  // 保留旧字段(主题色支持)
   /**
-   * 文字颜色（主题色模式）
-   * @deprecated 导出时不保留主题信息，建议使用 color
-   */
-  themeColor?: V1ColorConfig;
-
-  /**
-   * 背景颜色（主题色模式）
-   * @deprecated 导出时不保留主题信息，建议使用 backcolor
-   */
-  themeBackcolor?: V1ColorConfig;
-
-  // 新增简单字段
-  /**
-   * 文字颜色（推荐）
-   * 十六进制颜色值，如 "#000000"
+   * 文字颜色
+   * 十六进制颜色值
    *
    * @example "#000000", "#FF5733", "#4472C4"
    */
   color?: string;
 
   /**
-   * 背景颜色（推荐）
-   * 十六进制颜色值，如 "#FFFFFF"
+   * 背景颜色
+   * 十六进制颜色值
    *
    * @example "#FFFFFF", "#D9E2F3", "#F2F2F2"
    */
@@ -185,27 +148,6 @@ export interface V1TableCellStyle {
   // ...其他字段
 }
 ```
-
-**方案 B: 仅使用简单字符串 (破坏性变更)**
-```typescript
-export interface V1TableCellStyle {
-  /**
-   * 文字颜色
-   * 十六进制颜色值
-   */
-  color?: string;
-
-  /**
-   * 背景颜色
-   * 十六进制颜色值
-   */
-  backcolor?: string;
-
-  // ...其他字段
-}
-```
-
-**推荐**: 使用方案 A,同时支持主题色和简单颜色值。
 
 ---
 
@@ -234,29 +176,6 @@ export interface V1PPTElementOutline {
 
 #### 建议修改
 
-**方案 A: 同时支持两种格式 (推荐)**
-```typescript
-export interface V1PPTElementOutline {
-  style?: "dashed" | "solid" | "dotted";
-  width?: number;
-
-  /**
-   * 边框颜色（主题色模式）
-   * @deprecated 导出时不保留主题信息，建议使用 color
-   */
-  themeColor?: V1ColorConfig;
-
-  /**
-   * 边框颜色（推荐）
-   * 十六进制颜色值
-   *
-   * @example "#000000", "#CCCCCC", "#4472C4"
-   */
-  color?: string;
-}
-```
-
-**方案 B: 仅使用简单字符串 (破坏性变更)**
 ```typescript
 export interface V1PPTElementOutline {
   style?: "dashed" | "solid" | "dotted";
@@ -265,12 +184,12 @@ export interface V1PPTElementOutline {
   /**
    * 边框颜色
    * 十六进制颜色值
+   *
+   * @example "#000000", "#CCCCCC", "#4472C4"
    */
   color?: string;
 }
 ```
-
-**推荐**: 使用方案 A。
 
 ---
 
@@ -364,10 +283,6 @@ export interface V1TableTheme {
 ```typescript
 /**
  * 表格单元格样式
- *
- * 支持两种颜色格式：
- * 1. 主题色模式（themeColor/themeBackcolor）- 导入时支持，导出时不保留
- * 2. 简单颜色值（color/backcolor）- 推荐使用，导出时使用此格式
  */
 export interface V1TableCellStyle {
   bold?: boolean;
@@ -375,50 +290,26 @@ export interface V1TableCellStyle {
   underline?: boolean;
   strikethrough?: boolean;
 
-  // ========== 颜色字段（同时支持两种格式）==========
-
   /**
-   * 文字颜色（主题色模式）
-   * @deprecated 导出时不保留主题信息，建议使用 color
-   */
-  themeColor?: V1ColorConfig;
-
-  /**
-   * 背景颜色（主题色模式）
-   * @deprecated 导出时不保留主题信息，建议使用 backcolor
-   */
-  themeBackcolor?: V1ColorConfig;
-
-  /**
-   * 文字颜色（推荐）
+   * 文字颜色
    * 十六进制颜色值
    * @example "#000000", "#FF5733"
    */
   color?: string;
 
   /**
-   * 背景颜色（推荐）
+   * 背景颜色
    * 十六进制颜色值
    * @example "#FFFFFF", "#D9E2F3"
    */
   backcolor?: string;
 
-  // ========== 字体大小（同时支持两种字段名）==========
-
   /**
-   * 字体大小（旧字段名）
-   * @deprecated 请使用 fontSize (驼峰命名)
-   */
-  fontsize?: string;
-
-  /**
-   * 字体大小（推荐）
+   * 字体大小
    * 格式: "数字 + 单位"
    * @example "14pt", "16px"
    */
   fontSize?: string;
-
-  // ========== 其他字段 ==========
 
   fontname?: string;
   align?: "left" | "center" | "right" | "justify";
@@ -430,23 +321,13 @@ export interface V1TableCellStyle {
 ```typescript
 /**
  * 元素边框
- *
- * 支持两种颜色格式：
- * 1. 主题色模式（themeColor）- 导入时支持，导出时不保留
- * 2. 简单颜色值（color）- 推荐使用，导出时使用此格式
  */
 export interface V1PPTElementOutline {
   style?: "dashed" | "solid" | "dotted";
   width?: number;
 
   /**
-   * 边框颜色（主题色模式）
-   * @deprecated 导出时不保留主题信息，建议使用 color
-   */
-  themeColor?: V1ColorConfig;
-
-  /**
-   * 边框颜色（推荐）
+   * 边框颜色
    * 十六进制颜色值
    * @example "#000000", "#CCCCCC"
    */
@@ -506,9 +387,8 @@ export interface V1CompatibleTableElement extends V1CompatibleBaseElement {
    - 为 `V1CompatibleTableElement` 添加文档注释
 
 2. **更新测试用例**
-   - 添加同时使用 `themeColor` 和 `color` 的测试
-   - 添加同时使用 `fontsize` 和 `fontSize` 的测试
-   - 验证两种格式的互操作性
+   - 验证新字段名的正确性
+   - 确保类型定义符合实际导出数据
 
 3. **发布新版本**
    - 更新 CHANGELOG.md
@@ -528,78 +408,9 @@ export interface V1CompatibleTableElement extends V1CompatibleBaseElement {
    - 修改单元格样式使用新字段名
    - 移除或标注 `theme` 字段为可选
 
-3. **修改导入逻辑**
-   - 文件: `src/views/Editor/Thumbnails/JSONImportExportButtons.vue`
-   - 添加字段兼容性处理
-   - 同时支持 `fontsize`/`fontSize`
-   - 同时支持 `themeColor`/`color`
-
-4. **验证导入导出**
-   - 导出 JSON → 验证格式
-   - 导入导出的 JSON → 验证渲染
-   - 导入旧格式 JSON → 验证兼容性
-
----
-
-## 兼容性处理代码示例
-
-### 导入时的字段兼容性处理
-
-```typescript
-// 在 JSONImportExportButtons.vue 中
-const normalizeTableCellStyle = (style: any) => {
-  if (!style) return style;
-
-  const normalized = { ...style };
-
-  // 字体大小：fontsize → fontSize
-  if (style.fontsize && !style.fontSize) {
-    normalized.fontSize = style.fontsize.includes('pt')
-      ? style.fontsize
-      : `${style.fontsize}pt`;
-  }
-
-  // 文字颜色：themeColor → color
-  if (style.themeColor && !style.color) {
-    normalized.color = typeof style.themeColor === 'string'
-      ? style.themeColor
-      : style.themeColor.color;
-  }
-
-  // 背景颜色：themeBackcolor → backcolor
-  if (style.themeBackcolor && !style.backcolor) {
-    normalized.backcolor = typeof style.themeBackcolor === 'string'
-      ? style.themeBackcolor
-      : style.themeBackcolor.color;
-  }
-
-  return normalized;
-};
-
-// 处理表格元素
-const normalizeTableElement = (element: any) => {
-  if (element.type !== 'table') return element;
-
-  // 处理 outline 颜色
-  if (element.outline?.themeColor && !element.outline.color) {
-    element.outline.color = typeof element.outline.themeColor === 'string'
-      ? element.outline.themeColor
-      : element.outline.themeColor.color;
-  }
-
-  // 处理单元格样式
-  if (element.data && Array.isArray(element.data)) {
-    element.data = element.data.map((row: any[]) =>
-      row.map((cell: any) => ({
-        ...cell,
-        style: normalizeTableCellStyle(cell.style),
-      }))
-    );
-  }
-
-  return element;
-};
-```
+3. **验证导入导出**
+   - 导出 JSON → 验证格式使用新字段名
+   - 导入导出的 JSON → 验证渲染正确
 
 ---
 
@@ -607,8 +418,8 @@ const normalizeTableElement = (element: any) => {
 
 ### ppteditor-types 包
 
-- [ ] `V1TableCellStyle` 同时包含旧字段和新字段
-- [ ] `V1PPTElementOutline` 同时包含 `themeColor` 和 `color`
+- [ ] `V1TableCellStyle` 使用新字段名 (`fontSize`, `color`, `backcolor`)
+- [ ] `V1PPTElementOutline` 使用 `color` 字段
 - [ ] TypeScript 编译通过
 - [ ] 测试用例全部通过
 - [ ] 文档注释完整清晰
@@ -616,8 +427,6 @@ const normalizeTableElement = (element: any) => {
 ### frontend-new-ppt 项目
 
 - [ ] scenario-5 Mock 数据使用新格式
-- [ ] 导入旧格式 JSON 能正常工作
-- [ ] 导入新格式 JSON 能正常工作
 - [ ] 导出的 JSON 使用新格式
 - [ ] 导出 → 导入循环测试通过
 - [ ] 表格渲染正确
@@ -626,35 +435,30 @@ const normalizeTableElement = (element: any) => {
 
 ## 风险评估
 
-### 低风险
-- ✅ 添加新字段（向后兼容）
-- ✅ 添加文档注释
-- ✅ 保留旧字段但标记为 deprecated
-
-### 中风险
-- ⚠️ 需要在导入时处理两种格式
+### 破坏性变更
+- ⚠️ 移除旧字段名 (`fontsize`, `themeColor`, `themeBackcolor`)
+- ⚠️ 使用新字段名 (`fontSize`, `color`, `backcolor`)
 - ⚠️ Mock 数据需要同步更新
 
-### 零风险
-- 🔒 不删除任何现有字段
-- 🔒 不修改现有字段的类型
-- 🔒 仅添加和文档化
+### 影响范围
+- 依赖 `@douglasdong/ppteditor-types` 的项目需要更新字段名
+- 旧版本导出的 JSON 可能与新类型定义不匹配
 
 ---
 
 ## 总结
 
 ### 核心变更
-1. **V1TableCellStyle**: 添加 `color`, `backcolor`, `fontSize` 字段
-2. **V1PPTElementOutline**: 添加 `color` 字段
+1. **V1TableCellStyle**: 使用 `color`, `backcolor`, `fontSize` 字段(移除旧字段名)
+2. **V1PPTElementOutline**: 使用 `color` 字段(移除 `themeColor`)
 3. **文档**: 为 `colWidths` 和 `theme` 添加详细说明
 
-### 兼容性策略
-- **同时支持新旧字段** (不破坏现有代码)
-- **标记旧字段为 deprecated** (引导迁移)
-- **导入时自动转换** (用户无感)
+### 变更策略
+- **直接使用新字段名** (破坏性变更)
+- **移除旧字段名** (简化类型定义)
+- **与实际导出数据完全匹配** (消除混淆)
 
 ### 推荐实施顺序
-1. 先修改 ppteditor-types 并发布
-2. 再更新 frontend-new-ppt 项目
-3. 逐步迁移 Mock 数据和测试
+1. 先修改 ppteditor-types 并发布新版本
+2. 同步更新 frontend-new-ppt 项目使用新字段名
+3. 更新 Mock 数据和测试用例
