@@ -117,7 +117,7 @@ describe('V1ToV2Adapter', () => {
       const v1Outline: V1PPTElementOutline = {
         style: 'dashed',
         width: 2,
-        themeColor: { color: '#ff0000' }
+        color: '#ff0000'
       };
 
       const result = V1ToV2Adapter.convertOutline(v1Outline);
@@ -133,19 +133,19 @@ describe('V1ToV2Adapter', () => {
       expect(result).toBeUndefined();
     });
 
-    it('should handle outline with undefined themeColor', () => {
+    it('should handle outline with undefined color', () => {
       const v1Outline: V1PPTElementOutline = {
         style: 'solid',
         width: 1
       };
 
       const result = V1ToV2Adapter.convertOutline(v1Outline);
-      expect(result?.color).toBe('#000000');
+      expect(result?.color).toBeUndefined();
     });
 
     it('should handle outline with partial fields', () => {
       const v1Outline: V1PPTElementOutline = {
-        themeColor: { color: '#00ff00' }
+        color: '#00ff00'
       };
 
       const result = V1ToV2Adapter.convertOutline(v1Outline);

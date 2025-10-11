@@ -16,9 +16,23 @@ PPTEditor V2 标准化类型定义库，包含：
 - 幻灯片类型：幻灯片结构、背景、主题、模板等
 - **项目扩展**：基于标准类型的项目特定扩展（v2.2.0+）
 
-### 新特性：项目扩展类型 🎉
+### ⚠️ v2.4.0 破坏性变更
 
-v2.2.0 版本新增了项目扩展类型，提供了基于标准 `Slide` 类型的增强版本，专门用于支持 frontend-new-ppt 项目的特定需求：
+v2.4.0 对表格相关类型进行了重构，以匹配实际导出数据：
+
+**V1TableCellStyle 变更：**
+- `fontsize` → `fontSize` (驼峰命名)
+- `themeColor: V1ColorConfig` → `color: string` (十六进制颜色值)
+- `themeBackcolor: V1ColorConfig` → `backcolor: string`
+
+**V1PPTElementOutline 变更：**
+- `themeColor: V1ColorConfig` → `color: string`
+
+详见 [CHANGELOG](./CHANGELOG.md) 和 [迁移指南](./MIGRATION.md)
+
+### 项目扩展类型 🎉
+
+v2.2.0+ 版本提供了基于标准 `Slide` 类型的增强版本，专门用于支持 frontend-new-ppt 项目的特定需求：
 
 - ✅ **ProjectSlide** - 扩展的幻灯片类型，支持项目特有字段（pageId, tag, aiImage 等）
 - ✅ **ProjectSlideList** - 列表页专用类型，支持模板付费系统
@@ -78,7 +92,7 @@ const slide: ProjectSlide = {
 
 详细使用方法请参阅：
 - [项目扩展类型使用指南](./PROJECT_EXTENSIONS.md)
-- [类型差异详细分析](./SLIDE_TYPE_DIFFERENCES.md)
+- [迁移指南](./MIGRATION.md)
 
 ## 类型结构
 
