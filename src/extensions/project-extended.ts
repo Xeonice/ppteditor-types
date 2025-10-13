@@ -259,7 +259,8 @@ export interface ProjectSlideBase extends Omit<StandardSlide, 'background' | 'se
  *   payType: 'free',
  *   listFlag: 'template-list-1',
  *   autoFill: true,
- *   listCount: 20
+ *   listCount: 20,
+ *   templateId: 'template-123'  // 可选：标记该排版仅用于指定模板
  * }
  * ```
  */
@@ -298,7 +299,8 @@ export type ProjectSlideList = ProjectSlideListBase & { elements: PPTElement[] }
  *   tag: 'list',
  *   payType: 'free',
  *   listFlag: 'list-1',
- *   autoFill: true
+ *   autoFill: true,
+ *   templateId: 'template-456'  // 可选：标记该排版仅用于指定模板
  * }
  * ```
  */

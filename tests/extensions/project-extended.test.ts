@@ -222,6 +222,31 @@ describe('ProjectExtended Types', () => {
       }
       expect(slide.listCount).toBe(10)
     })
+
+    it('should accept templateId in list slide', () => {
+      const slide: ProjectSlideList = {
+        id: 'slide-1',
+        elements: [],
+        tag: 'list',
+        payType: 'free',
+        listFlag: 'list-1',
+        autoFill: true,
+        templateId: 'template-123'
+      }
+      expect(slide.templateId).toBe('template-123')
+    })
+
+    it('should work without templateId (backwards compatibility)', () => {
+      const slide: ProjectSlideList = {
+        id: 'slide-1',
+        elements: [],
+        tag: 'list',
+        payType: 'free',
+        listFlag: 'list-1',
+        autoFill: true
+      }
+      expect(slide.templateId).toBeUndefined()
+    })
   })
 
   describe('ProjectSlide Union Type', () => {
