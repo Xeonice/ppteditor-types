@@ -902,7 +902,16 @@ export interface V1SlideListBase<TContent extends TextContent = string> extends 
   /** 项目扩展：自动填充 */
   autoFill?: boolean;
 
-  /** 项目扩展：模板ID，标记该排版仅用于特定模板 */
+  /**
+   * 项目扩展：模板ID，标记该排版仅用于特定模板
+   *
+   * @remarks
+   * - 如果设置了 templateId，该排版只能在指定模板中使用
+   * - 如果不设置（undefined），该排版可在所有模板中使用
+   * - 格式：任意非空字符串（通常为模板的唯一标识符）
+   * - 建议使用有意义的标识符（如 'business-template-001'）或 UUID
+   * - 空字符串会被视为无效值（运行时验证会拒绝）
+   */
   templateId?: string;
 }
 

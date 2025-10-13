@@ -269,7 +269,17 @@ export interface ProjectSlideListBase extends ProjectSlideBase {
   payType: TemplatePayType         // 付费类型
   listFlag: string                 // 列表标识符
   autoFill: boolean                // 是否自动填充
-  templateId?: string              // 模板ID，标记该排版仅用于特定模板
+  /**
+   * 模板ID，标记该排版仅用于特定模板
+   *
+   * @remarks
+   * - 如果设置了 templateId，该排版只能在指定模板中使用
+   * - 如果不设置（undefined），该排版可在所有模板中使用
+   * - 格式：任意非空字符串（通常为模板的唯一标识符）
+   * - 建议使用有意义的标识符（如 'business-template-001'）或 UUID
+   * - 空字符串会被视为无效值（运行时验证会拒绝）
+   */
+  templateId?: string
 }
 
 /**
@@ -375,6 +385,10 @@ export function validateProjectSlide(data: unknown): data is ProjectSlide {
     if (typeof slide.payType !== 'string') return false
     if (typeof slide.listFlag !== 'string') return false
     if (typeof slide.autoFill !== 'boolean') return false
+    // 验证可选的 templateId 字段（必须是非空字符串）
+    if (slide.templateId !== undefined) {
+      if (typeof slide.templateId !== 'string' || slide.templateId.length === 0) return false
+    }
   }
 
   // 验证背景字段（如果存在）

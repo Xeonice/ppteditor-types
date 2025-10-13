@@ -644,6 +644,89 @@ describe('ProjectExtended Types', () => {
         expect(validateProjectSlide(invalidListSlide)).toBe(false)
       })
 
+      it('should validate list slide with valid templateId', () => {
+        const listSlideWithTemplateId = {
+          id: 'slide-1',
+          elements: [],
+          tag: 'list',
+          payType: 'free',
+          listFlag: 'list-1',
+          autoFill: true,
+          templateId: 'template-123'
+        }
+
+        expect(validateProjectSlide(listSlideWithTemplateId)).toBe(true)
+      })
+
+      it('should validate list slide without templateId (backwards compatibility)', () => {
+        const listSlideWithoutTemplateId = {
+          id: 'slide-1',
+          elements: [],
+          tag: 'list',
+          payType: 'free',
+          listFlag: 'list-1',
+          autoFill: true
+        }
+
+        expect(validateProjectSlide(listSlideWithoutTemplateId)).toBe(true)
+      })
+
+      it('should reject list slide with empty string templateId', () => {
+        const listSlideWithEmptyTemplateId = {
+          id: 'slide-1',
+          elements: [],
+          tag: 'list',
+          payType: 'free',
+          listFlag: 'list-1',
+          autoFill: true,
+          templateId: ''
+        }
+
+        expect(validateProjectSlide(listSlideWithEmptyTemplateId)).toBe(false)
+      })
+
+      it('should reject list slide with non-string templateId', () => {
+        const listSlideWithInvalidTemplateId = {
+          id: 'slide-1',
+          elements: [],
+          tag: 'list',
+          payType: 'free',
+          listFlag: 'list-1',
+          autoFill: true,
+          templateId: 123 // number instead of string
+        }
+
+        expect(validateProjectSlide(listSlideWithInvalidTemplateId)).toBe(false)
+      })
+
+      it('should validate list slide with UUID templateId', () => {
+        const listSlideWithUUID = {
+          id: 'slide-1',
+          elements: [],
+          tag: 'list',
+          payType: 'free',
+          listFlag: 'list-1',
+          autoFill: true,
+          templateId: '550e8400-e29b-41d4-a716-446655440000'
+        }
+
+        expect(validateProjectSlide(listSlideWithUUID)).toBe(true)
+      })
+
+      it('should validate list slide with descriptive templateId', () => {
+        const listSlideWithDescriptiveId = {
+          id: 'slide-1',
+          elements: [],
+          tag: 'list',
+          payType: 'free',
+          listFlag: 'list-1',
+          autoFill: true,
+          templateId: 'business-template-001'
+        }
+
+        expect(validateProjectSlide(listSlideWithDescriptiveId)).toBe(true)
+      })
+
       it('should validate slide with background', () => {
         const slideWithBg = {
           id: 'slide-1',
