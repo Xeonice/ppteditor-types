@@ -232,6 +232,56 @@ describe('V1ToV2Adapter.convertTableCellStyle', () => {
 
       expect(result).toEqual(input);
     });
+
+    it('应该处理空字符串颜色（回退到 themeColor）', () => {
+      const input: V1TableCellStyle = {
+        color: '',
+        themeColor: { color: '#000000', colorType: 'dk1' },
+        fontsize: '14px'
+      };
+
+      const result = V1ToV2Adapter.convertTableCellStyle(input);
+
+      // 空字符串被视为 falsy，应该回退到 themeColor
+      expect(result).toEqual({
+        color: '#000000',
+        fontsize: '14px'
+      });
+    });
+
+    it('应该处理空字符串背景色（回退到 themeBackcolor）', () => {
+      const input: V1TableCellStyle = {
+        backcolor: '',
+        themeBackcolor: { color: '#FFFFFF', colorType: 'lt1' },
+        fontsize: '14px'
+      };
+
+      const result = V1ToV2Adapter.convertTableCellStyle(input);
+
+      // 空字符串被视为 falsy，应该回退到 themeBackcolor
+      expect(result).toEqual({
+        backcolor: '#FFFFFF',
+        fontsize: '14px'
+      });
+    });
+
+    it('应该处理同时为空字符串的颜色和背景色', () => {
+      const input: V1TableCellStyle = {
+        color: '',
+        backcolor: '',
+        themeColor: { color: '#333333', colorType: 'dk1' },
+        themeBackcolor: { color: '#D9E2F3', colorType: 'accent1' },
+        fontsize: '14px'
+      };
+
+      const result = V1ToV2Adapter.convertTableCellStyle(input);
+
+      expect(result).toEqual({
+        color: '#333333',
+        backcolor: '#D9E2F3',
+        fontsize: '14px'
+      });
+    });
   });
 });
 
@@ -359,5 +409,148 @@ describe('实际使用场景', () => {
       fontsize: '12px',
       align: 'center'
     });
+  });
+});
+
+describe('表格元素集成测试', () => {
+  it('应该正确转换包含单元格样式的完整表格元素', () => {
+    // 模拟一个包含单元格样式的表格元素
+    const tableData = [
+      [
+        {
+          id: 'cell-1-1',
+          colspan: 1,
+          rowspan: 1,
+          text: '表头',
+          style: {
+            bold: true,
+            themeColor: { color: '#FFFFFF', colorType: 'lt1' },
+            themeBackcolor: { color: '#4472C4', colorType: 'accent1' },
+            fontsize: '14px',
+            align: 'center' as const
+          }
+        },
+        {
+          id: 'cell-1-2',
+          colspan: 1,
+          rowspan: 1,
+          text: '数据',
+          style: {
+            color: '#333333',
+            backcolor: '#FFFFFF',
+            fontsize: '12px',
+            align: 'left' as const
+          }
+        }
+      ]
+    ];
+
+    // 转换表格中的所有单元格样式
+    const convertedData = tableData.map(row =>
+      row.map(cell => ({
+        ...cell,
+        style: V1ToV2Adapter.convertTableCellStyle(cell.style)
+      }))
+    );
+
+    // 验证第一个单元格（旧格式）转换正确
+    expect(convertedData[0][0].style).toEqual({
+      bold: true,
+      color: '#FFFFFF',
+      backcolor: '#4472C4',
+      fontsize: '14px',
+      align: 'center'
+    });
+
+    // 验证第二个单元格（新格式）保持不变
+    expect(convertedData[0][1].style).toEqual({
+      color: '#333333',
+      backcolor: '#FFFFFF',
+      fontsize: '12px',
+      align: 'left'
+    });
+  });
+
+  it('应该处理混合格式的表格元素', () => {
+    const mixedTableData = [
+      [
+        {
+          id: 'cell-1',
+          text: '混合格式单元格',
+          style: {
+            color: '#FFFFFF',
+            themeColor: { color: '#000000', colorType: 'dk1' },
+            backcolor: '#4472C4',
+            fontsize: '14px'
+          }
+        }
+      ]
+    ];
+
+    const converted = mixedTableData.map(row =>
+      row.map(cell => ({
+        ...cell,
+        style: V1ToV2Adapter.convertTableCellStyle(cell.style)
+      }))
+    );
+
+    // 应该优先使用新格式的 color 和 backcolor
+    expect(converted[0][0].style).toEqual({
+      color: '#FFFFFF',
+      backcolor: '#4472C4',
+      fontsize: '14px'
+    });
+  });
+
+  it('应该处理包含空样式的单元格', () => {
+    const tableWithEmptyStyles = [
+      [
+        { id: 'cell-1', text: '无样式', style: undefined },
+        { id: 'cell-2', text: '空对象', style: {} }
+      ]
+    ];
+
+    const converted = tableWithEmptyStyles.map(row =>
+      row.map(cell => ({
+        ...cell,
+        style: V1ToV2Adapter.convertTableCellStyle(cell.style)
+      }))
+    );
+
+    expect(converted[0][0].style).toBeUndefined();
+    expect(converted[0][1].style).toBeUndefined();
+  });
+
+  it('应该正确处理大型表格的批量转换', () => {
+    // 创建一个 5x5 的表格
+    const largeTable = Array.from({ length: 5 }, (_, rowIndex) =>
+      Array.from({ length: 5 }, (_, colIndex) => ({
+        id: `cell-${rowIndex}-${colIndex}`,
+        text: `Cell ${rowIndex}-${colIndex}`,
+        style: {
+          themeColor: { color: '#333333', colorType: 'dk1' },
+          themeBackcolor: { color: '#FFFFFF', colorType: 'lt1' },
+          fontsize: '12px'
+        }
+      }))
+    );
+
+    const converted = largeTable.map(row =>
+      row.map(cell => ({
+        ...cell,
+        style: V1ToV2Adapter.convertTableCellStyle(cell.style)
+      }))
+    );
+
+    // 验证所有单元格都正确转换
+    for (let i = 0; i < 5; i++) {
+      for (let j = 0; j < 5; j++) {
+        expect(converted[i][j].style).toEqual({
+          color: '#333333',
+          backcolor: '#FFFFFF',
+          fontsize: '12px'
+        });
+      }
+    }
   });
 });

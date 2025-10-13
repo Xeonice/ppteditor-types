@@ -13,7 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `V1TableCellStyle` 现在同时支持新旧两种格式
     - 新格式（推荐）：`color`, `backcolor`, `fontsize`（全小写）
     - 旧格式（兼容）：`themeColor`, `themeBackcolor`（标记为 @deprecated）
-  - 修正字段命名：`fontSize` → `fontsize`（全小写，符合 V2 标准）
+  - **修正 v2.4.0 的字段命名错误**：
+    - v2.4.0 错误地使用了 `fontSize`（驼峰命名）
+    - v2.5.0 修正为 `fontsize`（全小写），这才是实际 PPT 导出数据使用的字段名
+    - 此修正符合 V2 标准类型定义（src/base/common.ts:134）
   - 明确文档说明：支持 `"14px"` 和 `"12pt"` 两种单位格式
 
 ### 🔧 修复
