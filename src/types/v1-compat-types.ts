@@ -369,10 +369,9 @@ export interface V1PPTNoneElement extends V1CompatibleBaseElement {
  * 表格单元格样式
  *
  * ⚠️ 设计说明：
- * - 颜色字段使用简单字符串类型，而非 V1ColorConfig 对象
- * - 这是根据实际导出数据结构优化的结果
- * - 表格导出时不保留主题色信息，所有颜色都被计算为最终的十六进制值
- * - 字体大小使用驼峰命名 (fontSize) 以匹配实际导出数据
+ * - 同时支持新旧两种颜色字段格式（向后兼容）
+ * - 新格式：color, backcolor（简单字符串）
+ * - 旧格式：themeColor, themeBackcolor（ColorConfig 对象）
  */
 export interface V1TableCellStyle {
   bold?: boolean;
@@ -381,25 +380,37 @@ export interface V1TableCellStyle {
   strikethrough?: boolean;
 
   /**
-   * 文字颜色
+   * 文字颜色（新格式，推荐）
    * 十六进制颜色值
    * @example "#000000", "#FF5733"
    */
   color?: string;
 
   /**
-   * 背景颜色
+   * 背景颜色（新格式，推荐）
    * 十六进制颜色值
    * @example "#FFFFFF", "#D9E2F3"
    */
   backcolor?: string;
 
   /**
-   * 字体大小
-   * 格式: "数字 + 单位"
-   * @example "14pt", "16px"
+   * 文字颜色（旧格式，兼容）
+   * @deprecated 建议使用 color
    */
-  fontSize?: string;
+  themeColor?: V1ColorConfig;
+
+  /**
+   * 背景颜色（旧格式，兼容）
+   * @deprecated 建议使用 backcolor
+   */
+  themeBackcolor?: V1ColorConfig;
+
+  /**
+   * 字体大小
+   * 格式: "数字 + 单位"（px 或 pt）
+   * @example "14px", "16pt", "12px"
+   */
+  fontsize?: string;
 
   fontname?: string;
   align?: "left" | "center" | "right" | "justify";
