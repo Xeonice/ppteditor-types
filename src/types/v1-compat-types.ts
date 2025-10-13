@@ -901,6 +901,9 @@ export interface V1SlideListBase<TContent extends TextContent = string> extends 
 
   /** 项目扩展：自动填充 */
   autoFill?: boolean;
+
+  /** 项目扩展：模板ID，标记该排版仅用于特定模板 */
+  templateId?: string;
 }
 
 /**

@@ -268,6 +268,7 @@ export interface ProjectSlideListBase extends ProjectSlideBase {
   payType: TemplatePayType         // 付费类型
   listFlag: string                 // 列表标识符
   autoFill: boolean                // 是否自动填充
+  templateId?: string              // 模板ID，标记该排版仅用于特定模板
 }
 
 /**
