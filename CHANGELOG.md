@@ -5,6 +5,60 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.1] - 2025-10-13
+
+### ✨ 新增
+
+- **SlideList 类型模板关联功能**
+  - `ProjectSlideListBase` 添加可选的 `templateId?: string` 字段
+  - `V1SlideListBase` 添加可选的 `templateId?: string` 字段
+  - 用于标记特定排版仅适用于指定模板
+
+### 📖 文档
+
+- **增强 JSDoc 文档**
+  - 在 `ProjectSlideListBase` 和 `ProjectSlide` 的 JSDoc 示例中添加 `templateId` 字段使用示例
+  - 添加中文注释说明该字段的可选性和使用场景
+
+### 🧪 测试
+
+- **新增测试用例**
+  - 添加 `templateId` 字段赋值和读取的测试用例
+  - 添加向后兼容性测试（不设置 `templateId` 时为 `undefined`）
+  - 所有 239 个测试通过
+
+### 🔧 向后兼容性
+
+- ✅ 完全向后兼容 - `templateId` 为可选字段
+- ✅ 不影响现有代码
+- ✅ 前端项目可以立即使用此字段
+
+### 使用示例
+
+```typescript
+// 创建一个仅适用于特定模板的列表页
+const listSlide: ProjectSlideList = {
+  id: 'slide-1',
+  elements: [],
+  tag: 'list',
+  payType: 'free',
+  listFlag: 'list-1',
+  autoFill: true,
+  templateId: 'template-123'  // 可选：标记该排版仅用于指定模板
+}
+
+// 创建一个适用于所有模板的列表页（默认行为）
+const universalListSlide: ProjectSlideList = {
+  id: 'slide-2',
+  elements: [],
+  tag: 'list',
+  payType: 'free',
+  listFlag: 'list-2',
+  autoFill: true
+  // 不设置 templateId，该排版可在所有模板中使用
+}
+```
+
 ## [2.5.0] - 2025-10-13
 
 ### ✨ 新增
