@@ -5,6 +5,83 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2025-10-13
+
+### ✨ 新增
+
+- **表格单元格样式向后兼容性增强**
+  - `V1TableCellStyle` 现在同时支持新旧两种格式
+    - 新格式（推荐）：`color`, `backcolor`, `fontsize`（全小写）
+    - 旧格式（兼容）：`themeColor`, `themeBackcolor`（标记为 @deprecated）
+  - **修正 v2.4.0 的字段命名错误**：
+    - v2.4.0 错误地使用了 `fontSize`（驼峰命名）
+    - v2.5.0 修正为 `fontsize`（全小写），这才是实际 PPT 导出数据使用的字段名
+    - 此修正符合 V2 标准类型定义（src/base/common.ts:134）
+  - 明确文档说明：支持 `"14px"` 和 `"12pt"` 两种单位格式
+
+### 🔧 修复
+
+- **适配器增强**
+  - 新增 `V1ToV2Adapter.convertTableCellStyle()` 方法
+  - 新增 `V2ToV1Adapter.convertTableCellStyle()` 方法
+  - 智能处理新旧格式混合场景，优先使用新格式
+
+- **优先级规则明确**
+  - 当 `color` 和 `themeColor` 同时存在时，优先使用 `color`
+  - 当 `backcolor` 和 `themeBackcolor` 同时存在时，优先使用 `backcolor`
+  - 当 `fontsize` 存在时使用 `fontsize`
+  - 所有优先级规则已在 JSDoc 中明确文档化
+
+### 🧪 测试
+
+- **新增测试用例**
+  - 添加 `tests/types/table-cell-style.test.ts` 测试文件
+  - 覆盖新格式、旧格式、混合格式三种场景
+  - 验证适配器转换的正确性和可逆性
+  - 所有测试通过
+
+### 📖 迁移指南
+
+**⚠️ 重要变更：**此版本恢复了对旧格式的支持，使 v2.4.0 的破坏性变更变为渐进式迁移。
+
+**推荐用法（新格式）：**
+```typescript
+// 表格单元格样式
+{
+  color: "#FFFFFF",           // 简单字符串
+  backcolor: "#4472C4",       // 简单字符串
+  fontsize: "14px"            // 全小写 + 单位
+}
+```
+
+**仍然支持（旧格式）：**
+```typescript
+// 表格单元格样式
+{
+  themeColor: { color: "#FFFFFF", colorType: "lt1" },
+  themeBackcolor: { color: "#4472C4", colorType: "accent1" },
+  fontsize: "14px"
+}
+```
+
+**混合格式（优先新格式）：**
+```typescript
+// 当同时存在时，优先使用 color/backcolor
+{
+  color: "#FFFFFF",                                           // ✅ 优先使用
+  themeColor: { color: "#000000", colorType: "dk1" },        // ⚠️ 被忽略
+  backcolor: "#4472C4",                                       // ✅ 优先使用
+  themeBackcolor: { color: "#FFFFFF", colorType: "lt1" },    // ⚠️ 被忽略
+  fontsize: "14px"
+}
+```
+
+**向后兼容性保证：**
+- ✅ v2.4.0 之前的旧代码无需修改即可继续工作
+- ✅ 新代码推荐使用简洁的字符串格式
+- ✅ 适配器会自动处理格式转换
+- ⚠️ 旧格式字段已标记 `@deprecated`，建议逐步迁移
+
 ## [2.4.0] - 2025-10-11
 
 ### 💥 破坏性变更
