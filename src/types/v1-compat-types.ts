@@ -372,6 +372,12 @@ export interface V1PPTNoneElement extends V1CompatibleBaseElement {
  * - 同时支持新旧两种颜色字段格式（向后兼容）
  * - 新格式：color, backcolor（简单字符串）
  * - 旧格式：themeColor, themeBackcolor（ColorConfig 对象）
+ *
+ * 🔍 优先级规则：
+ * 当新旧格式字段同时存在时，适配器会按以下优先级处理：
+ * 1. color > themeColor（优先使用新格式的 color）
+ * 2. backcolor > themeBackcolor（优先使用新格式的 backcolor）
+ * 3. 如果新格式字段不存在，则回退到旧格式字段
  */
 export interface V1TableCellStyle {
   bold?: boolean;
@@ -382,6 +388,9 @@ export interface V1TableCellStyle {
   /**
    * 文字颜色（新格式，推荐）
    * 十六进制颜色值
+   *
+   * ⚠️ 优先级：当 color 和 themeColor 同时存在时，优先使用 color
+   *
    * @example "#000000", "#FF5733"
    */
   color?: string;
@@ -389,18 +398,27 @@ export interface V1TableCellStyle {
   /**
    * 背景颜色（新格式，推荐）
    * 十六进制颜色值
+   *
+   * ⚠️ 优先级：当 backcolor 和 themeBackcolor 同时存在时，优先使用 backcolor
+   *
    * @example "#FFFFFF", "#D9E2F3"
    */
   backcolor?: string;
 
   /**
    * 文字颜色（旧格式，兼容）
+   *
+   * ⚠️ 优先级：仅当 color 不存在时使用
+   *
    * @deprecated 建议使用 color
    */
   themeColor?: V1ColorConfig;
 
   /**
    * 背景颜色（旧格式，兼容）
+   *
+   * ⚠️ 优先级：仅当 backcolor 不存在时使用
+   *
    * @deprecated 建议使用 backcolor
    */
   themeBackcolor?: V1ColorConfig;

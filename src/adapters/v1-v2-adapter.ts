@@ -10,6 +10,7 @@ import type {
   V1ShapeGradient,
   V1PPTElementShadow,
   V1PPTElementOutline,
+  V1TableCellStyle,
   V1CompatiblePPTElement,
   V1CompatibleTextElement,
   V1CompatibleShapeElement,
@@ -151,6 +152,73 @@ export class V1ToV2Adapter {
       width: v1Outline.width,
       color: v1Outline.color
     };
+  })
+
+  /**
+   * 表格单元格样式转换：V1TableCellStyle → V1TableCellStyle (规范化)
+   *
+   * @description
+   * 处理新旧格式混合的表格单元格样式，统一转换为新格式。
+   *
+   * 优先级规则：
+   * - color > themeColor（优先使用简单字符串格式）
+   * - backcolor > themeBackcolor（优先使用简单字符串格式）
+   *
+   * @param v1Style - V1格式的表格单元格样式（可能包含新旧格式混合）
+   * @returns 规范化的V1格式表格单元格样式（仅包含新格式字段）
+   *
+   * @example
+   * // 处理旧格式
+   * const style = convertTableCellStyle({
+   *   themeColor: { color: '#000000', colorType: 'dk1' },
+   *   fontsize: '14px'
+   * })
+   * // Returns: { color: '#000000', fontsize: '14px' }
+   *
+   * @example
+   * // 处理混合格式（优先新格式）
+   * const style = convertTableCellStyle({
+   *   color: '#FFFFFF',
+   *   themeColor: { color: '#000000', colorType: 'dk1' },
+   *   fontsize: '14px'
+   * })
+   * // Returns: { color: '#FFFFFF', fontsize: '14px' }
+   */
+  static convertTableCellStyle = memoize((v1Style: V1TableCellStyle | undefined): V1TableCellStyle | undefined => {
+    if (!v1Style) return undefined;
+
+    const result: V1TableCellStyle = {};
+
+    // 复制基本样式属性
+    if (v1Style.bold !== undefined) result.bold = v1Style.bold;
+    if (v1Style.em !== undefined) result.em = v1Style.em;
+    if (v1Style.underline !== undefined) result.underline = v1Style.underline;
+    if (v1Style.strikethrough !== undefined) result.strikethrough = v1Style.strikethrough;
+
+    // 颜色转换：优先使用新格式 color，否则从 themeColor 提取
+    if (v1Style.color) {
+      result.color = v1Style.color;
+    } else if (v1Style.themeColor) {
+      // 从 themeColor 对象中提取颜色值
+      result.color = this.convertColor(v1Style.themeColor);
+    }
+
+    // 背景色转换：优先使用新格式 backcolor，否则从 themeBackcolor 提取
+    if (v1Style.backcolor) {
+      result.backcolor = v1Style.backcolor;
+    } else if (v1Style.themeBackcolor) {
+      // 从 themeBackcolor 对象中提取颜色值
+      result.backcolor = this.convertColor(v1Style.themeBackcolor);
+    }
+
+    // 字体大小
+    if (v1Style.fontsize) result.fontsize = v1Style.fontsize;
+
+    // 其他属性
+    if (v1Style.fontname) result.fontname = v1Style.fontname;
+    if (v1Style.align) result.align = v1Style.align;
+
+    return Object.keys(result).length > 0 ? result : undefined;
   })
 
   /**
@@ -320,6 +388,31 @@ export class V2ToV1Adapter {
       width: v2Outline.width,
       color: v2Outline.color
     };
+  })
+
+  /**
+   * 表格单元格样式转换：V1TableCellStyle → V1TableCellStyle (保持新格式)
+   *
+   * @description
+   * V2ToV1 的表格单元格样式转换器，确保输出统一使用新格式。
+   * 虽然 V2 中没有专门的 TableCellStyle 类型，但为了对称性和完整性，
+   * 提供此方法以便在需要时使用。
+   *
+   * @param v1Style - V1格式的表格单元格样式
+   * @returns 规范化的V1格式表格单元格样式（仅使用新格式字段）
+   *
+   * @example
+   * const style = convertTableCellStyle({
+   *   color: '#FFFFFF',
+   *   backcolor: '#4472C4',
+   *   fontsize: '14px'
+   * })
+   * // Returns: { color: '#FFFFFF', backcolor: '#4472C4', fontsize: '14px' }
+   */
+  static convertTableCellStyle = memoize((v1Style: V1TableCellStyle | undefined): V1TableCellStyle | undefined => {
+    // V2ToV1 转换时，直接使用 V1ToV2Adapter 的转换逻辑
+    // 这确保了转换的一致性和可逆性
+    return V1ToV2Adapter.convertTableCellStyle(v1Style);
   })
 
   /**
