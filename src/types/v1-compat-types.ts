@@ -896,19 +896,72 @@ export interface V1SlideBase<TContent extends TextContent = string> {
   gist?: string[];
 
   /** 项目扩展：备注/评论列表 */
-  notes?: Array<{
-    id: string;
-    content: string;
-    time: number;
-    user: string;
-    elId?: string;
-    replies?: Array<{
-      id: string;
-      content: string;
-      time: number;
-      user: string;
-    }>;
-  }>;
+  notes?: V1SlideNote[];
+}
+
+/**
+ * V1 幻灯片备注/评论回复
+ *
+ * @description 用于表示评论的回复项
+ *
+ * @example
+ * ```typescript
+ * const reply: V1SlideNoteReply = {
+ *   id: 'reply-1',
+ *   content: '同意这个建议',
+ *   time: 1697000000000,
+ *   user: 'user-456'
+ * }
+ * ```
+ */
+export interface V1SlideNoteReply {
+  /** 回复唯一标识 */
+  id: string;
+  /** 回复内容 */
+  content: string;
+  /** 回复时间戳 */
+  time: number;
+  /** 回复用户标识 */
+  user: string;
+}
+
+/**
+ * V1 幻灯片备注/评论
+ *
+ * @description 用于表示幻灯片的备注或评论，可以关联到特定元素，并支持回复
+ *
+ * @example
+ * ```typescript
+ * const note: V1SlideNote = {
+ *   id: 'note-1',
+ *   content: '这里需要修改标题文案',
+ *   time: 1697000000000,
+ *   user: 'user-123',
+ *   elId: 'text-element-1',  // 关联到特定元素
+ *   replies: [
+ *     {
+ *       id: 'reply-1',
+ *       content: '已修改',
+ *       time: 1697001000000,
+ *       user: 'user-456'
+ *     }
+ *   ]
+ * }
+ * ```
+ */
+export interface V1SlideNote {
+  /** 备注唯一标识 */
+  id: string;
+  /** 备注内容 */
+  content: string;
+  /** 创建时间戳 */
+  time: number;
+  /** 创建用户标识 */
+  user: string;
+  /** 关联的元素ID（可选） */
+  elId?: string;
+  /** 回复列表（可选） */
+  replies?: V1SlideNoteReply[];
 }
 
 /**
