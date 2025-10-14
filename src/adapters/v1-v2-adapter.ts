@@ -147,10 +147,19 @@ export class V1ToV2Adapter {
   static convertOutline = memoize((v1Outline: V1PPTElementOutline | undefined): PPTElementOutline | undefined => {
     if (!v1Outline) return undefined;
 
+    // Priority: themeColor > color
+    // Design Decision: themeColor has higher priority over color to align with
+    // the theme system. When themeColor is present, it represents the semantic
+    // color choice (e.g., "accent color") which should be respected over direct
+    // color assignments. This ensures theme consistency across the document.
+    const outlineColor = v1Outline.themeColor
+      ? this.convertColor(v1Outline.themeColor)
+      : v1Outline.color;
+
     return {
       style: v1Outline.style as LineStyleType,
       width: v1Outline.width,
-      color: v1Outline.color
+      color: outlineColor
     };
   })
 
@@ -386,7 +395,9 @@ export class V2ToV1Adapter {
     return {
       style: v2Outline.style as "dashed" | "solid",
       width: v2Outline.width,
-      color: v2Outline.color
+      color: v2Outline.color,
+      // Convert V2 color to V1 themeColor for consistency with the theme system
+      themeColor: v2Outline.color ? this.convertColor(v2Outline.color) : undefined
     };
   })
 

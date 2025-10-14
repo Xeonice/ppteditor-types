@@ -91,10 +91,10 @@ export interface V1PPTElementShadow {
  * 元素边框
  *
  * ⚠️ 设计说明：
- * - 边框颜色使用简单的字符串类型 (color?: string)，而非 V1ColorConfig 对象
- * - 这是因为实际导出数据中，边框颜色已被计算为最终的十六进制值
- * - 与表格单元格样式保持一致，都使用简化的颜色表示
- * - 其他元素（如文本、形状）仍使用 V1ColorConfig 以支持主题色功能
+ * - 边框同时支持简单颜色 (color) 和主题色 (themeColor)
+ * - themeColor 优先级高于 color，用于支持主题色功能
+ * - 与其他元素（如文本、形状）保持一致，支持 V1ColorConfig 对象
+ * - 导出时可根据需要转换为简化的颜色值
  */
 export interface V1PPTElementOutline {
   style?: "dashed" | "solid" | "dotted";  // 支持所有线条样式
@@ -106,11 +106,38 @@ export interface V1PPTElementOutline {
    *
    * 注意：
    * - 如果未指定，渲染时应使用默认颜色（通常为黑色 #000000）
+   * - 当 themeColor 存在时，优先使用 themeColor
    * - V1→V2 转换时，undefined 值会被保留（V2 也支持 color?: string）
    *
    * @example "#000000", "#CCCCCC", "#4472C4"
    */
   color?: string;
+
+  /**
+   * 主题色配置（可选）
+   * 支持主题色功能，包含颜色值和主题色类型信息
+   *
+   * 注意：
+   * - 优先级高于 color 属性
+   * - 支持简单模式和完整主题色模式
+   * - 用于实现主题切换时自动更新颜色
+   *
+   * @example
+   * ```typescript
+   * // 简单模式
+   * { color: "#FF0000" }
+   *
+   * // 主题色模式
+   * {
+   *   color: "#FF0000",
+   *   themeColor: {
+   *     color: "#FF0000",
+   *     type: "accent1"
+   *   }
+   * }
+   * ```
+   */
+  themeColor?: V1ColorConfig;
 }
 
 // V1项目基础元素扩展属性
@@ -865,20 +892,76 @@ export interface V1SlideBase<TContent extends TextContent = string> {
   /** 项目扩展：填充页面类型 */
   fillPageType?: number;
 
+  /** 项目扩展：页面要点/摘要列表 */
+  gist?: string[];
+
   /** 项目扩展：备注/评论列表 */
-  notes?: Array<{
-    id: string;
-    content: string;
-    time: number;
-    user: string;
-    elId?: string;
-    replies?: Array<{
-      id: string;
-      content: string;
-      time: number;
-      user: string;
-    }>;
-  }>;
+  notes?: V1SlideNote[];
+}
+
+/**
+ * V1 幻灯片备注/评论回复
+ *
+ * @description 用于表示评论的回复项
+ *
+ * @example
+ * ```typescript
+ * const reply: V1SlideNoteReply = {
+ *   id: 'reply-1',
+ *   content: '同意这个建议',
+ *   time: 1697000000000,
+ *   user: 'user-456'
+ * }
+ * ```
+ */
+export interface V1SlideNoteReply {
+  /** 回复唯一标识 */
+  id: string;
+  /** 回复内容 */
+  content: string;
+  /** 回复时间戳 */
+  time: number;
+  /** 回复用户标识 */
+  user: string;
+}
+
+/**
+ * V1 幻灯片备注/评论
+ *
+ * @description 用于表示幻灯片的备注或评论，可以关联到特定元素，并支持回复
+ *
+ * @example
+ * ```typescript
+ * const note: V1SlideNote = {
+ *   id: 'note-1',
+ *   content: '这里需要修改标题文案',
+ *   time: 1697000000000,
+ *   user: 'user-123',
+ *   elId: 'text-element-1',  // 关联到特定元素
+ *   replies: [
+ *     {
+ *       id: 'reply-1',
+ *       content: '已修改',
+ *       time: 1697001000000,
+ *       user: 'user-456'
+ *     }
+ *   ]
+ * }
+ * ```
+ */
+export interface V1SlideNote {
+  /** 备注唯一标识 */
+  id: string;
+  /** 备注内容 */
+  content: string;
+  /** 创建时间戳 */
+  time: number;
+  /** 创建用户标识 */
+  user: string;
+  /** 关联的元素ID（可选） */
+  elId?: string;
+  /** 回复列表（可选） */
+  replies?: V1SlideNoteReply[];
 }
 
 /**

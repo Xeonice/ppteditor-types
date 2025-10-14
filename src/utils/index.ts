@@ -16,3 +16,13 @@ export {
   mergeColorConfig,
   validateColorConfig
 } from './color-helpers.js';
+
+// ============ 验证工具 ============
+export {
+  isValidGist,
+  isValidNonEmptyGist,
+  isValidGistWithNonEmptyStrings,
+  isValidSlideNote,
+  isValidSlideNoteReply,
+  isValidSlideNotes
+} from './validation-helpers.js';

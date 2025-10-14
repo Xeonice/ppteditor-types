@@ -103,9 +103,111 @@ const slide: ProjectSlide = {
 - `slide/` - 幻灯片类型
 - `extensions/` - 项目扩展类型（v2.2.0+）
 - `types/` - V1/V2 兼容类型
+  - `V1SlideNote` - 幻灯片备注/评论类型（v2.5.2+）
+  - `V1SlideNoteReply` - 备注回复类型（v2.5.2+）
 - `adapters/` - 版本适配器
-- `utils/` - 版本转换工具
+- `utils/` - 工具函数
+  - `validation-helpers` - 类型验证工具（v2.5.2+）
+  - `color-helpers` - 颜色配置工具
+  - `version-converter` - 版本转换工具
 - `middleware/` - 版本中间件
+
+## 新增功能 (v2.5.2)
+
+### V1PPTElementOutline 主题颜色支持
+
+元素描边现在支持主题颜色系统:
+
+```typescript
+import type { V1PPTElementOutline } from '@douglasdong/ppteditor-types';
+
+// 使用主题颜色的描边
+const outline: V1PPTElementOutline = {
+  style: 'solid',
+  width: 2,
+  themeColor: {
+    color: '#4472C4',
+    themeColor: { color: '#4472C4', type: 'accent1' }
+  }
+  // themeColor 优先级高于 color，确保主题一致性
+};
+```
+
+### V1SlideBase gist 字段
+
+幻灯片现在支持存储关键要点或摘要:
+
+```typescript
+import type { V1SlideBase } from '@douglasdong/ppteditor-types';
+
+const slide: V1SlideBase = {
+  id: 'slide-1',
+  elements: [],
+  gist: [
+    '关键要点 1：产品特性介绍',
+    '关键要点 2：市场优势分析',
+    '关键要点 3：未来发展规划'
+  ]
+};
+```
+
+### 验证工具函数
+
+新增类型安全的验证辅助函数:
+
+```typescript
+import {
+  isValidGist,
+  isValidNonEmptyGist,
+  isValidGistWithNonEmptyStrings,
+  isValidSlideNote,
+  isValidSlideNoteReply,
+  isValidSlideNotes
+} from '@douglasdong/ppteditor-types/utils';
+
+// 验证 gist 字段
+const data: unknown = ['point 1', 'point 2'];
+if (isValidGist(data)) {
+  // TypeScript 现在知道 data 是 string[]
+  console.log(data.length);
+}
+
+// 验证幻灯片备注
+const noteData: unknown = {
+  id: 'note-1',
+  content: '备注内容',
+  time: Date.now(),
+  user: 'user-123'
+};
+if (isValidSlideNote(noteData)) {
+  // TypeScript 类型安全
+  console.log(noteData.content);
+}
+```
+
+### 独立的备注类型
+
+备注和回复现在有独立的类型定义，提高可读性和可重用性:
+
+```typescript
+import type { V1SlideNote, V1SlideNoteReply } from '@douglasdong/ppteditor-types';
+
+const reply: V1SlideNoteReply = {
+  id: 'reply-1',
+  content: '已修改',
+  time: Date.now(),
+  user: 'user-456'
+};
+
+const note: V1SlideNote = {
+  id: 'note-1',
+  content: '这里需要修改标题文案',
+  time: Date.now(),
+  user: 'user-123',
+  elId: 'text-element-1',  // 关联到特定元素
+  replies: [reply]
+};
+```
 
 ## 协议
 

@@ -5,6 +5,99 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.2] - 2025-10-14
+
+### ✨ 新增
+
+- **V1PPTElementOutline 主题颜色支持**
+  - 添加 `themeColor?: V1ColorConfig` 字段到 `V1PPTElementOutline` 接口
+  - 支持元素描边使用主题颜色系统
+  - 确保主题一致性和语义化颜色选择
+
+- **V1SlideBase 页面摘要字段**
+  - 添加 `gist?: string[]` 字段到 `V1SlideBase` 接口
+  - 用于存储幻灯片的关键要点或摘要信息
+  - 支持可选的字符串数组格式
+
+### 🔧 修复
+
+- **适配器增强**
+  - **V1ToV2Adapter.convertOutline()** 实现 `themeColor` 优先级处理
+    - 优先级规则：`themeColor` > `color`
+    - 当 `themeColor` 存在时，优先使用主题颜色以保持主题一致性
+    - 当 `themeColor` 不存在时，回退到 `color` 字段
+    - 添加详细的设计决策注释
+  - **V2ToV1Adapter.convertOutline()** 填充 `themeColor` 字段
+    - 从 V2 的 `color` 字段创建 V1 的 `themeColor` 配置
+    - 确保往返转换时保留主题信息
+    - 支持完整的 V1 ↔ V2 双向转换
+
+### 🧪 测试
+
+- **新增 15 个测试用例**
+  - **themeColor in outlines (5个测试)**:
+    - 优先级测试：验证 `themeColor` 优先于 `color`
+    - 仅 themeColor 场景：测试只有主题颜色的描边
+    - 主题元数据测试：验证包含完整主题信息的转换
+    - 往返转换测试：确保 V1→V2→V1 数据完整性
+    - 基础字段测试：验证所有字段正确转换
+
+  - **gist 字段 (7个测试)**:
+    - 可选字符串数组支持验证
+    - undefined 值处理测试
+    - 空数组支持测试
+    - 与其他幻灯片属性的集成测试
+
+  - **类型验证 (3个测试)**:
+    - themeColor 作为可选 ColorConfig 的类型安全性
+    - 允许 themeColor 为 undefined
+    - 支持仅 themeColor 无 color 的场景
+
+- **测试统计**
+  - 总测试数：217 个（新增 15 个）
+  - 所有测试通过 ✅
+  - TypeScript 类型检查通过 ✅
+
+### 📖 文档
+
+- **设计决策文档**
+  - 在适配器代码中添加详细的优先级规则说明
+  - 解释为什么 `themeColor` 优先级高于 `color`
+  - 强调主题一致性在文档系统中的重要性
+
+### 🔧 向后兼容性
+
+- ✅ 完全向后兼容 - `themeColor` 和 `gist` 均为可选字段
+- ✅ 不影响现有代码
+- ✅ 适配器自动处理字段缺失的情况
+- ✅ 往返转换保持数据完整性
+
+### 使用示例
+
+```typescript
+// 使用 themeColor 的描边
+const outlineWithTheme: V1PPTElementOutline = {
+  style: 'solid',
+  width: 2,
+  themeColor: {
+    color: '#4472C4',
+    themeColor: { color: '#4472C4', type: 'accent1' }
+  }
+  // themeColor 优先级高于 color
+}
+
+// 使用 gist 的幻灯片
+const slideWithGist: V1SlideBase = {
+  id: 'slide-1',
+  elements: [],
+  gist: [
+    '关键要点 1：产品特性介绍',
+    '关键要点 2：市场优势分析',
+    '关键要点 3：未来发展规划'
+  ]
+}
+```
+
 ## [2.5.1] - 2025-10-13
 
 ### ✨ 新增
@@ -478,6 +571,11 @@ const universalListSlide: ProjectSlideList = {
   - Proper package.json configuration
   - License: MIT
 
+[2.5.2]: https://github.com/Xeonice/ppteditor-types/compare/v2.5.1...v2.5.2
+[2.5.1]: https://github.com/Xeonice/ppteditor-types/compare/v2.5.0...v2.5.1
+[2.5.0]: https://github.com/Xeonice/ppteditor-types/compare/v2.4.0...v2.5.0
+[2.4.0]: https://github.com/Xeonice/ppteditor-types/compare/v2.3.1...v2.4.0
+[2.3.1]: https://github.com/Xeonice/ppteditor-types/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/Xeonice/ppteditor-types/compare/v2.2.1...v2.3.0
 [2.2.1]: https://github.com/Xeonice/ppteditor-types/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/Xeonice/ppteditor-types/compare/v2.1.1...v2.2.0

@@ -16,7 +16,8 @@ import type {
   LegacyV1ColorConfig,
   V1ShapeGradient,
   V1PPTElementShadow,
-  V1PPTElementOutline
+  V1PPTElementOutline,
+  V1SlideBase
 } from '../../src/types/v1-compat-types.js';
 
 describe('V1ToV2Adapter', () => {
@@ -152,6 +153,62 @@ describe('V1ToV2Adapter', () => {
       expect(result?.style).toBeUndefined();
       expect(result?.width).toBeUndefined();
       expect(result?.color).toBe('#00ff00');
+    });
+
+    it('should prioritize themeColor over color', () => {
+      const v1Outline: V1PPTElementOutline = {
+        style: 'solid',
+        width: 2,
+        color: '#ff0000',
+        themeColor: { color: '#0000ff' }
+      };
+
+      const result = V1ToV2Adapter.convertOutline(v1Outline);
+      expect(result?.color).toBe('#0000ff'); // themeColor has priority
+    });
+
+    it('should handle outline with only themeColor', () => {
+      const v1Outline: V1PPTElementOutline = {
+        style: 'dashed',
+        width: 3,
+        themeColor: { color: '#00ff00' }
+      };
+
+      const result = V1ToV2Adapter.convertOutline(v1Outline);
+      expect(result?.style).toBe('dashed');
+      expect(result?.width).toBe(3);
+      expect(result?.color).toBe('#00ff00');
+    });
+
+    it('should handle outline with themeColor object including theme metadata', () => {
+      const v1Outline: V1PPTElementOutline = {
+        style: 'solid',
+        width: 1,
+        themeColor: {
+          color: '#4472C4',
+          themeColor: { color: '#4472C4', type: 'accent1' }
+        }
+      };
+
+      const result = V1ToV2Adapter.convertOutline(v1Outline);
+      expect(result?.color).toBe('#4472C4');
+    });
+
+    it('should perform round-trip conversion correctly', () => {
+      // V1 -> V2 -> V1
+      const originalV1: V1PPTElementOutline = {
+        style: 'dashed',
+        width: 2,
+        themeColor: { color: '#ff6600' }
+      };
+
+      const v2Result = V1ToV2Adapter.convertOutline(originalV1);
+      const backToV1 = V2ToV1Adapter.convertOutline(v2Result);
+
+      expect(backToV1?.style).toBe('dashed');
+      expect(backToV1?.width).toBe(2);
+      expect(backToV1?.color).toBe('#ff6600');
+      expect(backToV1?.themeColor?.color).toBe('#ff6600');
     });
   });
 
@@ -633,5 +690,103 @@ describe('Round-trip Conversion Tests (V1→V2→V1)', () => {
 
     expect(backToV1.color).toBe('#000000');
     expect(backToV1.themeColor).toBeUndefined();
+  });
+});
+
+describe('V1 Type Extensions', () => {
+  describe('V1SlideBase gist field', () => {
+    it('should support gist as optional string array', () => {
+      // Type check: ensure gist field is properly typed
+      const slideWithGist: V1SlideBase = {
+        id: 'slide-1',
+        elements: [],
+        gist: ['Key point 1', 'Key point 2', 'Key point 3']
+      };
+
+      expect(slideWithGist.gist).toBeDefined();
+      expect(Array.isArray(slideWithGist.gist)).toBe(true);
+      expect(slideWithGist.gist).toHaveLength(3);
+      expect(slideWithGist.gist?.[0]).toBe('Key point 1');
+    });
+
+    it('should allow gist to be undefined', () => {
+      const slideWithoutGist: V1SlideBase = {
+        id: 'slide-2',
+        elements: []
+      };
+
+      expect(slideWithoutGist.gist).toBeUndefined();
+    });
+
+    it('should support empty gist array', () => {
+      const slideWithEmptyGist: V1SlideBase = {
+        id: 'slide-3',
+        elements: [],
+        gist: []
+      };
+
+      expect(slideWithEmptyGist.gist).toBeDefined();
+      expect(slideWithEmptyGist.gist).toHaveLength(0);
+    });
+
+    it('should work with other slide properties', () => {
+      const fullSlide: V1SlideBase = {
+        id: 'slide-4',
+        elements: [],
+        gist: ['Summary point'],
+        background: { type: 'solid', color: '#ffffff' },
+        notes: [{
+          id: 'note-1',
+          left: 0,
+          top: 0,
+          width: 100,
+          height: 100,
+          fill: '#ffff00',
+          content: 'Note text'
+        }]
+      };
+
+      expect(fullSlide.gist).toEqual(['Summary point']);
+      expect(fullSlide.background?.color).toBe('#ffffff');
+      expect(fullSlide.notes).toHaveLength(1);
+    });
+  });
+
+  describe('V1PPTElementOutline themeColor field', () => {
+    it('should support themeColor as optional ColorConfig', () => {
+      const outlineWithThemeColor: V1PPTElementOutline = {
+        style: 'solid',
+        width: 2,
+        color: '#ff0000',
+        themeColor: {
+          color: '#0000ff',
+          themeColor: { color: '#0000ff', type: 'accent1' }
+        }
+      };
+
+      expect(outlineWithThemeColor.themeColor).toBeDefined();
+      expect(outlineWithThemeColor.themeColor?.color).toBe('#0000ff');
+    });
+
+    it('should allow themeColor to be undefined', () => {
+      const outlineWithoutThemeColor: V1PPTElementOutline = {
+        style: 'dashed',
+        width: 1,
+        color: '#00ff00'
+      };
+
+      expect(outlineWithoutThemeColor.themeColor).toBeUndefined();
+    });
+
+    it('should support themeColor without regular color', () => {
+      const outlineOnlyThemeColor: V1PPTElementOutline = {
+        style: 'dotted',
+        width: 3,
+        themeColor: { color: '#ff00ff' }
+      };
+
+      expect(outlineOnlyThemeColor.color).toBeUndefined();
+      expect(outlineOnlyThemeColor.themeColor?.color).toBe('#ff00ff');
+    });
   });
 });
