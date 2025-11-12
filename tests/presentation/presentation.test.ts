@@ -7,11 +7,8 @@ import { PresentationValidator } from '../../src/utils/presentation-validator.js
 describe('Presentation (V2)', () => {
   it('应该创建有效的 V2 文档', () => {
     const doc: Presentation = {
-      size: {
-        width: 1280,
-        height: 720,
-        aspectRatio: '16:9'
-      },
+      width: 1280,
+      height: 720,
       slides: [
         {
           id: 'slide-1',
@@ -26,9 +23,9 @@ describe('Presentation (V2)', () => {
         fontName: 'Arial'
       },
       fileName: 'test.pptx',
+      title: 'Test Presentation',
       metadata: {
-        version: '2.0',
-        title: 'Test Presentation'
+        version: '2.0'
       }
     }
 
@@ -37,42 +34,34 @@ describe('Presentation (V2)', () => {
 
   it('应该支持完整的元数据字段', () => {
     const doc: Presentation = {
-      size: {
-        width: 1280,
-        height: 720,
-        aspectRatio: '16:9'
-      },
+      width: 1280,
+      height: 720,
       slides: [],
       theme: {
         fontName: 'Arial'
       },
       fileName: 'test.pptx',
+      title: 'Test Presentation',
       metadata: {
         version: '2.0',
-        title: 'Test Presentation',
         author: 'Test Author',
         created: '2025-01-12T10:00:00.000Z',
         modified: '2025-01-12T11:00:00.000Z',
         description: 'Test Description',
         parsedAt: '2025-01-12T10:00:00.000Z',
-        features: ['tables', 'charts'],
-        slideCount: 10,
-        elementCount: 50
+        features: ['tables', 'charts']
       }
     }
 
     expect(PresentationValidator.validate(doc)).toBe(true)
     expect(doc.metadata.author).toBe('Test Author')
-    expect(doc.metadata.slideCount).toBe(10)
     expect(doc.metadata.features).toEqual(['tables', 'charts'])
   })
 
   it('应该支持主题颜色映射', () => {
     const doc: Presentation = {
-      size: {
-        width: 1280,
-        height: 720
-      },
+      width: 1280,
+      height: 720,
       slides: [],
       theme: {
         fontName: 'Arial',
@@ -81,6 +70,7 @@ describe('Presentation (V2)', () => {
           accent2: '#ED7D31'
         }
       },
+      title: 'Test',
       fileName: 'test.pptx',
       metadata: {
         version: '2.0'
@@ -91,9 +81,9 @@ describe('Presentation (V2)', () => {
     expect(doc.theme.themeColor?.accent1).toBe('#4472C4')
   })
 
-  it('应该拒绝缺少 size 的文档', () => {
+  it('应该拒绝缺少 width/height 的文档', () => {
     const invalidDoc = {
-      // 缺少 size
+      // 缺少 width/height
       slides: [],
       theme: {
         fontName: 'Arial'
@@ -109,10 +99,8 @@ describe('Presentation (V2)', () => {
 
   it('应该拒绝 metadata.version 不是 "2.0" 的文档', () => {
     const invalidDoc = {
-      size: {
-        width: 1280,
-        height: 720
-      },
+      width: 1280,
+      height: 720,
       slides: [],
       theme: {
         fontName: 'Arial'
@@ -128,10 +116,8 @@ describe('Presentation (V2)', () => {
 
   it('应该拒绝缺少 fileName 的文档', () => {
     const invalidDoc = {
-      size: {
-        width: 1280,
-        height: 720
-      },
+      width: 1280,
+      height: 720,
       slides: [],
       theme: {
         fontName: 'Arial'
@@ -147,10 +133,8 @@ describe('Presentation (V2)', () => {
 
   it('validateOrThrow 应该在验证失败时抛出错误', () => {
     const invalidDoc = {
-      size: {
-        width: 1280,
-        height: 720
-      }
+      width: 1280,
+      height: 720
       // 缺少其他必需字段
     }
 
@@ -161,14 +145,13 @@ describe('Presentation (V2)', () => {
 
   it('validateOrThrow 应该在验证成功时不抛出错误', () => {
     const validDoc: Presentation = {
-      size: {
-        width: 1280,
-        height: 720
-      },
+      width: 1280,
+      height: 720,
       slides: [],
       theme: {
         fontName: 'Arial'
       },
+      title: 'Test',
       fileName: 'test.pptx',
       metadata: {
         version: '2.0'
@@ -182,12 +165,11 @@ describe('Presentation (V2)', () => {
 
   it('应该支持所有类型别名', () => {
     const doc: Presentation = {
-      size: {
-        width: 1280,
-        height: 720
-      },
+      width: 1280,
+      height: 720,
       slides: [],
       theme: { fontName: 'Arial' },
+      title: 'Test',
       fileName: 'test.pptx',
       metadata: { version: '2.0' }
     }
@@ -202,33 +184,5 @@ describe('Presentation (V2)', () => {
     expect(doc2).toBe(doc)
     expect(doc3).toBe(doc)
     expect(doc4).toBe(doc)
-  })
-
-  it('PresentationSize 应该支持可选的 aspectRatio', () => {
-    const docWithAspectRatio: Presentation = {
-      size: {
-        width: 1280,
-        height: 720,
-        aspectRatio: '16:9'
-      },
-      slides: [],
-      theme: { fontName: 'Arial' },
-      fileName: 'test.pptx',
-      metadata: { version: '2.0' }
-    }
-
-    const docWithoutAspectRatio: Presentation = {
-      size: {
-        width: 1280,
-        height: 720
-      },
-      slides: [],
-      theme: { fontName: 'Arial' },
-      fileName: 'test.pptx',
-      metadata: { version: '2.0' }
-    }
-
-    expect(PresentationValidator.validate(docWithAspectRatio)).toBe(true)
-    expect(PresentationValidator.validate(docWithoutAspectRatio)).toBe(true)
   })
 })

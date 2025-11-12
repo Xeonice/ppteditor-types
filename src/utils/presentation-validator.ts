@@ -56,14 +56,18 @@ export class PresentationValidator {
     const doc = data as any
 
     // 必需字段检查
-    if (!doc.size || typeof doc.size !== 'object') return false
-    if (typeof doc.size.width !== 'number') return false
-    if (typeof doc.size.height !== 'number') return false
+    if (typeof doc.width !== 'number') return false
+    if (typeof doc.height !== 'number') return false
     if (!Array.isArray(doc.slides)) return false
     if (!doc.theme || typeof doc.theme !== 'object') return false
+    if (typeof doc.title !== 'string') return false
     if (typeof doc.fileName !== 'string') return false
-    if (!doc.metadata || typeof doc.metadata !== 'object') return false
-    if (doc.metadata.version !== '2.0') return false
+
+    // metadata 是可选的，如果存在则验证
+    if (doc.metadata) {
+      if (typeof doc.metadata !== 'object') return false
+      if (doc.metadata.version && doc.metadata.version !== '2.0') return false
+    }
 
     // 幻灯片结构检查
     for (const slide of doc.slides) {

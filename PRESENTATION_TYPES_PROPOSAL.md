@@ -151,9 +151,6 @@ export interface PresentationMetadata {
   /** 使用的功能特性 */
   features?: string[]
 
-  /** 文档标题 */
-  title?: string
-
   /** 作者 */
   author?: string
 
@@ -165,26 +162,6 @@ export interface PresentationMetadata {
 
   /** 描述 */
   description?: string
-
-  /** 幻灯片总数 */
-  slideCount?: number
-
-  /** 元素总数 */
-  elementCount?: number
-}
-
-/**
- * 文档尺寸
- */
-export interface PresentationSize {
-  /** 宽度（points） */
-  width: number
-
-  /** 高度（points） */
-  height: number
-
-  /** 宽高比 */
-  aspectRatio?: string
 }
 
 /**
@@ -195,21 +172,25 @@ export interface PresentationSize {
  * @example
  * ```typescript
  * const presentation: Presentation = {
- *   size: { width: 1280, height: 720 },
+ *   width: 1280,
+ *   height: 720,
  *   slides: [...],
  *   theme: { ... },
  *   fileName: 'presentation.pptx',
+ *   title: 'My Presentation',
  *   metadata: {
  *     version: '2.0',
- *     title: 'My Presentation',
  *     parsedAt: '2025-01-12T10:00:00.000Z'
  *   }
  * }
  * ```
  */
 export interface Presentation {
-  /** 文档尺寸 */
-  size: PresentationSize
+  /** 画布宽度（points） */
+  width: number
+
+  /** 画布高度（points） */
+  height: number
 
   /** 幻灯片数组 */
   slides: Slide[]
@@ -220,8 +201,11 @@ export interface Presentation {
   /** 文件名 */
   fileName: string
 
-  /** 文档元数据 */
-  metadata: PresentationMetadata
+  /** 文档标题 */
+  title: string
+
+  /** 文档元数据（可选） */
+  metadata?: PresentationMetadata
 }
 
 /**
@@ -255,8 +239,7 @@ export type {
   V2Presentation,
   V2Document,
   PPTistPresentation,
-  PresentationMetadata,
-  PresentationSize
+  PresentationMetadata
 } from './presentation.js'
 
 // 统一导出（方便使用）
@@ -284,11 +267,8 @@ export class LegacyPresentationToV2Adapter {
    */
   static convert(legacy: LegacyPresentation): Presentation {
     return {
-      size: {
-        width: legacy.width,
-        height: legacy.height,
-        aspectRatio: this.calculateAspectRatio(legacy.width, legacy.height)
-      },
+      width: legacy.width,
+      height: legacy.height,
       slides: legacy.slides.map(slide => ({
         ...slide,
         elements: slide.elements.map(el => V1ToV2Adapter.toV2(el))
@@ -298,26 +278,15 @@ export class LegacyPresentationToV2Adapter {
         themeColor: legacy.theme.themeColor
       },
       fileName: 'presentation.pptx',
+      title: legacy.title,
       metadata: {
         version: '2.0',
-        title: legacy.title,
         author: legacy.metadata?.author,
         created: legacy.metadata?.created,
         modified: legacy.metadata?.modified,
-        description: legacy.metadata?.description,
-        slideCount: legacy.slides.length,
-        elementCount: legacy.slides.reduce(
-          (sum, slide) => sum + slide.elements.length,
-          0
-        )
+        description: legacy.metadata?.description
       }
     }
-  }
-
-  private static calculateAspectRatio(width: number, height: number): string {
-    const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b))
-    const divisor = gcd(width, height)
-    return `${width / divisor}:${height / divisor}`
   }
 }
 
@@ -330,8 +299,8 @@ export class V2PresentationToLegacyAdapter {
    */
   static convert(presentation: Presentation): LegacyPresentation {
     return {
-      width: presentation.size.width,
-      height: presentation.size.height,
+      width: presentation.width,
+      height: presentation.height,
       slides: presentation.slides.map(slide => ({
         ...slide,
         elements: slide.elements.map(el => V2ToV1Adapter.toV1(el))
@@ -340,13 +309,13 @@ export class V2PresentationToLegacyAdapter {
         fontName: presentation.theme.fontName,
         themeColor: presentation.theme.themeColor
       },
-      title: presentation.metadata.title || 'Presentation',
+      title: presentation.title,
       metadata: {
-        title: presentation.metadata.title,
-        author: presentation.metadata.author,
-        created: presentation.metadata.created,
-        modified: presentation.metadata.modified,
-        description: presentation.metadata.description
+        title: presentation.title,
+        author: presentation.metadata?.author,
+        created: presentation.metadata?.created,
+        modified: presentation.metadata?.modified,
+        description: presentation.metadata?.description
       }
     }
   }
@@ -362,13 +331,13 @@ export class AutoPresentationAdapter {
   static detectVersion(data: any): 'v1' | 'v2' | 'unknown' {
     if (!data || typeof data !== 'object') return 'unknown'
 
-    // V2 特征：有 size 对象和 metadata.version
-    if (data.size && typeof data.size === 'object' && data.metadata?.version === '2.0') {
+    // V2 特征：有 fileName 和 metadata.version
+    if (data.fileName && data.metadata?.version === '2.0') {
       return 'v2'
     }
 
-    // V1 特征：有 width/height 字段且没有 size
-    if (typeof data.width === 'number' && typeof data.height === 'number' && !data.size) {
+    // V1 特征：有 width/height 字段且有 title（V1 的 title 是必需的）
+    if (typeof data.width === 'number' && typeof data.height === 'number' && typeof data.title === 'string') {
       return 'v1'
     }
 
@@ -472,14 +441,12 @@ export class PresentationValidator {
     const doc = data as any
 
     // 必需字段检查
-    if (!doc.size || typeof doc.size !== 'object') return false
-    if (typeof doc.size.width !== 'number') return false
-    if (typeof doc.size.height !== 'number') return false
+    if (typeof doc.width !== 'number') return false
+    if (typeof doc.height !== 'number') return false
     if (!Array.isArray(doc.slides)) return false
     if (!doc.theme || typeof doc.theme !== 'object') return false
     if (typeof doc.fileName !== 'string') return false
-    if (!doc.metadata || typeof doc.metadata !== 'object') return false
-    if (doc.metadata.version !== '2.0') return false
+    if (typeof doc.title !== 'string') return false
 
     // 幻灯片结构检查
     for (const slide of doc.slides) {
@@ -597,11 +564,8 @@ import { PresentationValidator } from '../../src/utils/presentation-validator.js
 describe('Presentation (V2)', () => {
   it('应该创建有效的 V2 文档', () => {
     const doc: Presentation = {
-      size: {
-        width: 1280,
-        height: 720,
-        aspectRatio: '16:9'
-      },
+      width: 1280,
+      height: 720,
       slides: [
         {
           id: 'slide-1',
@@ -612,9 +576,9 @@ describe('Presentation (V2)', () => {
         fontName: 'Arial'
       },
       fileName: 'test.pptx',
+      title: 'Test Presentation',
       metadata: {
-        version: '2.0',
-        title: 'Test Presentation'
+        version: '2.0'
       }
     }
 
@@ -644,11 +608,10 @@ describe('PresentationAdapter', () => {
 
     const v2Doc = LegacyPresentationToV2Adapter.convert(v1Doc)
 
-    expect(v2Doc.size.width).toBe(1280)
-    expect(v2Doc.size.height).toBe(720)
-    expect(v2Doc.size.aspectRatio).toBe('16:9')
-    expect(v2Doc.metadata.version).toBe('2.0')
-    expect(v2Doc.metadata.title).toBe('Test')
+    expect(v2Doc.width).toBe(1280)
+    expect(v2Doc.height).toBe(720)
+    expect(v2Doc.metadata?.version).toBe('2.0')
+    expect(v2Doc.title).toBe('Test')
   })
 
   it('应该自动检测文档版本', () => {
@@ -661,11 +624,13 @@ describe('PresentationAdapter', () => {
     }
 
     const v2Doc = {
-      size: { width: 1280, height: 720 },
+      width: 1280,
+      height: 720,
       slides: [],
       theme: { fontName: 'Arial' },
       fileName: 'test.pptx',
-      metadata: { version: '2.0', title: 'Test' }
+      title: 'Test',
+      metadata: { version: '2.0' }
     }
 
     expect(AutoPresentationAdapter.detectVersion(v1Doc)).toBe('v1')
@@ -724,14 +689,14 @@ import type { Presentation, LegacyPresentation } from '@douglasdong/ppteditor-ty
 
 // V2 文档（推荐）
 const v2Doc: Presentation = {
-  size: { width: 1280, height: 720 },
+  width: 1280,
+  height: 720,
   slides: [...],
   theme: { fontName: 'Arial' },
   fileName: 'presentation.pptx',
+  title: 'My Presentation',
   metadata: {
-    version: '2.0',
-    title: 'My Presentation',
-    slideCount: 10
+    version: '2.0'
   }
 };
 
@@ -771,7 +736,7 @@ import {
 // 验证 V2 文档
 if (PresentationValidator.validate(data)) {
   // TypeScript 知道 data 是 Presentation 类型
-  console.log(data.metadata.title);
+  console.log(data.title);
 }
 
 // 验证并抛出错误
@@ -825,10 +790,9 @@ git push origin v2.6.0
 ### Added
 
 - ✨ 新增文档级别类型定义
-  - `Presentation` (V2 标准文档类型)
+  - `Presentation` (V2 标准文档类型，扁平结构)
   - `LegacyPresentation` (V1 兼容文档类型)
   - `PresentationMetadata` (文档元数据)
-  - `PresentationSize` (文档尺寸)
 
 - ✨ 新增文档适配器
   - `LegacyPresentationToV2Adapter` (V1 → V2 转换)

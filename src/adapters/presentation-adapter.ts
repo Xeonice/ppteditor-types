@@ -12,37 +12,23 @@ export class LegacyPresentationToV2Adapter {
    */
   static convert(legacy: LegacyPresentation): Presentation {
     return {
-      size: {
-        width: legacy.width,
-        height: legacy.height,
-        aspectRatio: this.calculateAspectRatio(legacy.width, legacy.height)
-      },
+      width: legacy.width,
+      height: legacy.height,
       slides: legacy.slides,
       theme: {
         fontName: legacy.theme.fontName,
         themeColor: legacy.theme.themeColor
       },
+      title: legacy.title,
       fileName: 'presentation.pptx',
       metadata: {
         version: '2.0',
-        title: legacy.title,
         author: legacy.metadata?.author,
         created: legacy.metadata?.created,
         modified: legacy.metadata?.modified,
-        description: legacy.metadata?.description,
-        slideCount: legacy.slides.length,
-        elementCount: legacy.slides.reduce(
-          (sum, slide) => sum + slide.elements.length,
-          0
-        )
+        description: legacy.metadata?.description
       }
     }
-  }
-
-  private static calculateAspectRatio(width: number, height: number): string {
-    const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b))
-    const divisor = gcd(width, height)
-    return `${width / divisor}:${height / divisor}`
   }
 }
 
@@ -55,20 +41,20 @@ export class V2PresentationToLegacyAdapter {
    */
   static convert(presentation: Presentation): LegacyPresentation {
     return {
-      width: presentation.size.width,
-      height: presentation.size.height,
+      width: presentation.width,
+      height: presentation.height,
       slides: presentation.slides,
       theme: {
         fontName: presentation.theme.fontName,
         themeColor: presentation.theme.themeColor
       },
-      title: presentation.metadata.title || 'Presentation',
+      title: presentation.title,
       metadata: {
-        title: presentation.metadata.title,
-        author: presentation.metadata.author,
-        created: presentation.metadata.created,
-        modified: presentation.metadata.modified,
-        description: presentation.metadata.description
+        title: presentation.title,
+        author: presentation.metadata?.author,
+        created: presentation.metadata?.created,
+        modified: presentation.metadata?.modified,
+        description: presentation.metadata?.description
       }
     }
   }
@@ -84,13 +70,13 @@ export class AutoPresentationAdapter {
   static detectVersion(data: any): 'v1' | 'v2' | 'unknown' {
     if (!data || typeof data !== 'object') return 'unknown'
 
-    // V2 特征：有 size 对象和 metadata.version
-    if (data.size && typeof data.size === 'object' && data.metadata?.version === '2.0') {
+    // V2 特征：有 fileName 字段和 metadata.version
+    if (typeof data.fileName === 'string' && data.metadata?.version === '2.0') {
       return 'v2'
     }
 
-    // V1 特征：有 width/height 字段且没有 size
-    if (typeof data.width === 'number' && typeof data.height === 'number' && !data.size) {
+    // V1 特征：有 width/height/title 字段但没有 fileName
+    if (typeof data.width === 'number' && typeof data.height === 'number' && !data.fileName) {
       return 'v1'
     }
 

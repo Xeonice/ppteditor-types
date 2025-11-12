@@ -18,7 +18,6 @@ export type {
   V2Document,
   PPTistPresentation,
   PresentationMetadata,
-  PresentationSize,
   PresentationTheme
 } from './presentation.js'
 

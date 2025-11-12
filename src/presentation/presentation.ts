@@ -26,9 +26,6 @@ export interface PresentationMetadata {
   /** 使用的功能特性 */
   features?: string[]
 
-  /** 文档标题 */
-  title?: string
-
   /** 作者 */
   author?: string
 
@@ -40,26 +37,6 @@ export interface PresentationMetadata {
 
   /** 描述 */
   description?: string
-
-  /** 幻灯片总数 */
-  slideCount?: number
-
-  /** 元素总数 */
-  elementCount?: number
-}
-
-/**
- * 文档尺寸
- */
-export interface PresentationSize {
-  /** 宽度（points） */
-  width: number
-
-  /** 高度（points） */
-  height: number
-
-  /** 宽高比 */
-  aspectRatio?: string
 }
 
 /**
@@ -70,21 +47,25 @@ export interface PresentationSize {
  * @example
  * ```typescript
  * const presentation: Presentation = {
- *   size: { width: 1280, height: 720 },
+ *   width: 1280,
+ *   height: 720,
  *   slides: [...],
  *   theme: { fontName: 'Arial' },
+ *   title: 'My Presentation',
  *   fileName: 'presentation.pptx',
  *   metadata: {
  *     version: '2.0',
- *     title: 'My Presentation',
  *     parsedAt: '2025-01-12T10:00:00.000Z'
  *   }
  * }
  * ```
  */
 export interface Presentation {
-  /** 文档尺寸 */
-  size: PresentationSize
+  /** 画布宽度（points） */
+  width: number
+
+  /** 画布高度（points） */
+  height: number
 
   /** 幻灯片数组 */
   slides: Slide[]
@@ -92,11 +73,14 @@ export interface Presentation {
   /** 主题信息 */
   theme: PresentationTheme
 
+  /** 文档标题 */
+  title: string
+
   /** 文件名 */
   fileName: string
 
-  /** 文档元数据 */
-  metadata: PresentationMetadata
+  /** 文档元数据（可选） */
+  metadata?: PresentationMetadata
 }
 
 /**

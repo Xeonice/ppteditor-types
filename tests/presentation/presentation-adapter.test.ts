@@ -22,56 +22,12 @@ describe('PresentationAdapter', () => {
 
       const v2Doc = LegacyPresentationToV2Adapter.convert(v1Doc)
 
-      expect(v2Doc.size.width).toBe(1280)
-      expect(v2Doc.size.height).toBe(720)
-      expect(v2Doc.size.aspectRatio).toBe('16:9')
+      expect(v2Doc.width).toBe(1280)
+      expect(v2Doc.height).toBe(720)
       expect(v2Doc.metadata.version).toBe('2.0')
-      expect(v2Doc.metadata.title).toBe('Test')
+      expect(v2Doc.title).toBe('Test')
       expect(v2Doc.theme.fontName).toBe('Arial')
       expect(v2Doc.fileName).toBe('presentation.pptx')
-    })
-
-    it('应该正确计算宽高比', () => {
-      const v1Doc: LegacyPresentation = {
-        width: 1920,
-        height: 1080,
-        slides: [],
-        theme: { fontName: 'Arial' },
-        title: 'Test'
-      }
-
-      const v2Doc = LegacyPresentationToV2Adapter.convert(v1Doc)
-      expect(v2Doc.size.aspectRatio).toBe('16:9')
-    })
-
-    it('应该计算幻灯片总数和元素总数', () => {
-      const v1Doc: LegacyPresentation = {
-        width: 1280,
-        height: 720,
-        slides: [
-          {
-            id: 'slide-1',
-            elements: [
-              { id: 'el-1', type: 'text' } as any,
-              { id: 'el-2', type: 'shape' } as any
-            ],
-            background: { type: 'solid', color: '#ffffff' }
-          },
-          {
-            id: 'slide-2',
-            elements: [
-              { id: 'el-3', type: 'image' } as any
-            ],
-            background: { type: 'solid', color: '#ffffff' }
-          }
-        ],
-        theme: { fontName: 'Arial' },
-        title: 'Test'
-      }
-
-      const v2Doc = LegacyPresentationToV2Adapter.convert(v1Doc)
-      expect(v2Doc.metadata.slideCount).toBe(2)
-      expect(v2Doc.metadata.elementCount).toBe(3)
     })
 
     it('应该转换主题颜色', () => {
@@ -122,17 +78,14 @@ describe('PresentationAdapter', () => {
   describe('V2PresentationToLegacyAdapter', () => {
     it('应该将 V2 文档转换为 V1', () => {
       const v2Doc: Presentation = {
-        size: {
-          width: 1280,
-          height: 720,
-          aspectRatio: '16:9'
-        },
+        width: 1280,
+        height: 720,
         slides: [],
         theme: { fontName: 'Arial' },
         fileName: 'test.pptx',
+        title: 'Test',
         metadata: {
-          version: '2.0',
-          title: 'Test'
+          version: '2.0'
         }
       }
 
@@ -144,22 +97,25 @@ describe('PresentationAdapter', () => {
       expect(v1Doc.theme.fontName).toBe('Arial')
     })
 
-    it('应该使用默认标题当 metadata.title 缺失时', () => {
+    it('应该正确转换 title 字段', () => {
       const v2Doc: Presentation = {
-        size: { width: 1280, height: 720 },
+        width: 1280,
+        height: 720,
         slides: [],
         theme: { fontName: 'Arial' },
         fileName: 'test.pptx',
+        title: 'My Presentation',
         metadata: { version: '2.0' }
       }
 
       const v1Doc = V2PresentationToLegacyAdapter.convert(v2Doc)
-      expect(v1Doc.title).toBe('Presentation')
+      expect(v1Doc.title).toBe('My Presentation')
     })
 
     it('应该转换主题颜色', () => {
       const v2Doc: Presentation = {
-        size: { width: 1280, height: 720 },
+        width: 1280,
+        height: 720,
         slides: [],
         theme: {
           fontName: 'Arial',
@@ -179,13 +135,14 @@ describe('PresentationAdapter', () => {
 
     it('应该转换元数据', () => {
       const v2Doc: Presentation = {
-        size: { width: 1280, height: 720 },
+        width: 1280,
+        height: 720,
         slides: [],
         theme: { fontName: 'Arial' },
         fileName: 'test.pptx',
+        title: 'Test',
         metadata: {
           version: '2.0',
-          title: 'Test',
           author: 'Test Author',
           created: '2025-01-12',
           modified: '2025-01-12',
@@ -215,11 +172,13 @@ describe('PresentationAdapter', () => {
 
     it('应该自动检测 V2 文档', () => {
       const v2Doc = {
-        size: { width: 1280, height: 720 },
+        width: 1280,
+        height: 720,
         slides: [],
         theme: { fontName: 'Arial' },
         fileName: 'test.pptx',
-        metadata: { version: '2.0', title: 'Test' }
+        title: 'Test',
+        metadata: { version: '2.0' }
       }
 
       expect(AutoPresentationAdapter.detectVersion(v2Doc)).toBe('v2')
@@ -243,12 +202,13 @@ describe('PresentationAdapter', () => {
 
       const result = AutoPresentationAdapter.toV2(v1Doc)
       expect(result.metadata.version).toBe('2.0')
-      expect(result.size.width).toBe(1280)
+      expect(result.width).toBe(1280)
     })
 
     it('应该保持 V2 文档不变', () => {
       const v2Doc: Presentation = {
-        size: { width: 1280, height: 720 },
+        width: 1280,
+        height: 720,
         slides: [],
         theme: { fontName: 'Arial' },
         fileName: 'test.pptx',
@@ -267,11 +227,13 @@ describe('PresentationAdapter', () => {
 
     it('应该自动转换 V2 到 V1', () => {
       const v2Doc: Presentation = {
-        size: { width: 1280, height: 720 },
+        width: 1280,
+        height: 720,
         slides: [],
         theme: { fontName: 'Arial' },
         fileName: 'test.pptx',
-        metadata: { version: '2.0', title: 'Test' }
+        title: 'Test',
+        metadata: { version: '2.0' }
       }
 
       const result = AutoPresentationAdapter.toV1(v2Doc)
