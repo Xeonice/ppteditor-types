@@ -1,7 +1,7 @@
 {
   "name": "@douglasdong/ppteditor-types",
-  "version": "2.5.2",
-  "description": "PPTEditor V2 标准化类型定义库（支持V1兼容）- 增强版",
+  "version": "2.6.0",
+  "description": "PPTEditor 标准化类型定义库（支持文档级别类型）- 增强版",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -39,6 +39,26 @@
     "./extensions": {
       "types": "./dist/extensions/index.d.ts",
       "import": "./dist/extensions/index.js"
+    },
+    "./presentation": {
+      "types": "./dist/presentation/index.d.ts",
+      "import": "./dist/presentation/index.js"
+    },
+    "./presentation/legacy": {
+      "types": "./dist/presentation/legacy-presentation.d.ts",
+      "import": "./dist/presentation/legacy-presentation.js"
+    },
+    "./presentation/v2": {
+      "types": "./dist/presentation/presentation.d.ts",
+      "import": "./dist/presentation/presentation.js"
+    },
+    "./adapters/presentation": {
+      "types": "./dist/adapters/presentation-adapter.d.ts",
+      "import": "./dist/adapters/presentation-adapter.js"
+    },
+    "./validators/presentation": {
+      "types": "./dist/utils/presentation-validator.d.ts",
+      "import": "./dist/utils/presentation-validator.js"
     }
   },
   "files": [
