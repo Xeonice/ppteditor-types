@@ -9,6 +9,9 @@ export * from './elements/index.js';
 export * from './animation/index.js';
 export * from './slide/index.js';
 
+// ===== Presentation (Document-level) Types =====
+export * from './presentation/index.js';
+
 // ===== Project Extensions =====
 export * from './extensions/index.js';
 
@@ -22,6 +25,19 @@ export {
   VersionDetector,
   AutoAdapter
 } from './adapters/v1-v2-adapter.js';
+
+// ===== 文档适配器导出 =====
+export {
+  LegacyPresentationToV2Adapter,
+  V2PresentationToLegacyAdapter,
+  AutoPresentationAdapter
+} from './adapters/presentation-adapter.js';
+
+// ===== 文档验证器导出 =====
+export {
+  LegacyPresentationValidator,
+  PresentationValidator
+} from './utils/presentation-validator.js';
 
 // ===== 统一接口导出 =====
 export {
@@ -58,6 +74,11 @@ import * as SlideModule from './slide/index.js';
 import * as AnimationModule from './animation/index.js';
 import * as V2StandardModule from './types/v2-standard-types.js';
 
+// Presentation (Document-level) Types
+import * as PresentationModule from './presentation/index.js';
+import * as PresentationAdaptersModule from './adapters/presentation-adapter.js';
+import * as PresentationValidatorsModule from './utils/presentation-validator.js';
+
 // V1 Compatibility & Adapters
 import * as V1CompatModule from './types/v1-compat-types.js';
 import * as AdaptersModule from './adapters/v1-v2-adapter.js';
@@ -78,6 +99,13 @@ export const V2Types = {
   Slide: SlideModule,
   Animation: AnimationModule,
   Standard: V2StandardModule
+};
+
+// Group Presentation (Document-level) Types
+export const PresentationTypes = {
+  Types: PresentationModule,
+  Adapters: PresentationAdaptersModule,
+  Validators: PresentationValidatorsModule
 };
 
 // Group V1 Related Types
