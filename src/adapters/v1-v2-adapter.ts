@@ -226,6 +226,7 @@ export class V1ToV2Adapter {
     // 其他属性
     if (v1Style.fontname) result.fontname = v1Style.fontname;
     if (v1Style.align) result.align = v1Style.align;
+    if (v1Style.valign) result.valign = v1Style.valign;
 
     return Object.keys(result).length > 0 ? result : undefined;
   })

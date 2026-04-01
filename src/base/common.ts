@@ -134,6 +134,7 @@ export interface TableCellStyle {
   fontsize?: string;
   fontname?: string;
   align?: TextAlign;
+  valign?: 'top' | 'middle' | 'bottom';
 }
 
 /**

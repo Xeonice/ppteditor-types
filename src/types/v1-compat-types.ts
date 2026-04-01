@@ -459,6 +459,7 @@ export interface V1TableCellStyle {
 
   fontname?: string;
   align?: "left" | "center" | "right" | "justify";
+  valign?: 'top' | 'middle' | 'bottom';
 }
 
 /**
